@@ -1562,6 +1562,8 @@ async function runCmd(cmd, args, failOnStdErr = true) {
     });
     return stdOut;
 }
+const _cwd = process.cwd();
+function cleanup() { process.chdir(_cwd); }
 async function main() {
     switch (process.platform) {
         case "darwin": break;
@@ -1572,27 +1574,28 @@ async function main() {
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
     const cleanBuild = core.getInput('clean', { required: true }) == 'true';
-    const swiftPackageArgs = ['--package-path', sourceDir];
     core.endGroup();
     await core.group('Installing Dependencies', async () => await Promise.all([
         runCmd('brew', ['install', 'sourcekitten']),
         runCmd('gem', ['install', 'jazzy', '--no-document']),
     ]));
+    const oldCwd = process.cwd();
+    process.chdir(sourceDir);
     const packageJSON = await core.group('Parse package', async () => {
         // Resolving is necessary to prevent `swift package dump-package` from having resolving output.
-        const swiftPackageBaseArgs = ['package'].concat(swiftPackageArgs);
-        await runCmd('swift', swiftPackageBaseArgs.concat('resolve'));
-        return JSON.parse(await runCmd('swift', swiftPackageBaseArgs.concat('dump-package')));
+        await runCmd('swift', ['package', 'resolve']);
+        return JSON.parse(await runCmd('swift', ['package', 'dump-package']));
     });
     const moduleDocs = await core.group('Generating JSON docs', async () => {
         let docs = [];
         for (const product of packageJSON.products) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name, '--'].concat(swiftPackageArgs));
+            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name]);
             docs.push(moduleDoc);
         }
         return docs;
     });
+    process.chdir(oldCwd);
     const tempDir = await util.promisify(fs_1.mkdtemp)('swift-docs-action');
     const docsJSONPath = path_1.default.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
@@ -1615,10 +1618,11 @@ async function main() {
     await core.group('Cleaning up', async () => await io.rmRF(tempDir));
 }
 try {
-    main().catch(error => core.setFailed(error.message));
+    main().catch(error => core.setFailed(error.message)).finally(cleanup);
 }
 catch (error) {
     core.setFailed(error.message);
+    cleanup();
 }
 
 
