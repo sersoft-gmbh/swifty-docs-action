@@ -1,0 +1,24 @@
+name: SwiftPM Jazzy Docs
+description: Generates and combines jazzy docs for all SwiftPM products of a package.
+author: ser.soft GmbH
+inputs:
+  source:
+    description: The path to the Package.swift
+    required: true
+    default: './'
+  module-version:
+    description: The version to use when generating the docs.
+    required: false
+  output:
+    description: The path to the output folder.
+    required: false
+  clean:
+    description: Whether a previous output should be removed before generating docs.
+    required: true
+    default: true
+runs:
+  using: node12
+  main: dist/index.js
+branding:
+  color: orange
+  icon: book

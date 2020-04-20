@@ -1,0 +1,84 @@
+name: Master Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy-action-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install depenedencies
+        run: sudo npm i -g @zeit/ncc typescript
+      - uses: actions/checkout@v2
+      - name: Generate action code
+        run: npm run deploy
+      - name: Configure repository
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Commit changes
+        run: |
+          if ! git diff --exit-code; then
+            git add .
+            git commit -m "[AUTO] Update generated code"
+            git push
+          fi
+
+  test-defaults:
+    needs: deploy-action-code
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: sersoft-gmbh/swifty-docs-action@master
+        with:
+          source: __test__/TestProject
+      - name: Check for SPM build
+        run: test -d __test__/TestProject/.build
+        # We can't really check for more here, since we don't specify more.
+
+  test-customized:
+    needs: deploy-action-code
+    strategy:
+      matrix:
+        output: [docs, otherDocs]
+        clean: [true, false]
+        module-version: ['1.2.3', '0.0.1']
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create output folder with dummy file
+        run: |
+          mkdir -p ${{matrix.output}}
+          echo "test-content" > ${{matrix.output}}/_test_file.txt
+      - uses: sersoft-gmbh/swifty-docs-action@master
+        with:
+          source: __test__/TestProject
+          module-version: ${{matrix.module-version}}
+          clean: ${{matrix.clean}}
+          output: ${{matrix.output}}
+      - name: Check for SPM build
+        run: test -d __test__/TestProject/.build
+      - name: Check output path
+        run: test -d "${{matrix.output}}"
+      - name: Check index.html exists
+        run: test -f "${{matrix.output}}/index.html"
+      - name: Check version in index.html
+        run: cat "${{matrix.output}}/index.html" | grep -q '${{matrix.module-version}}'
+      - name: Check clean
+        run: |
+          TEST_FILE="${{matrix.output}}/_test_file.txt"
+          if [ "${{matrix.clean}}" != 'true' ]; then
+            if [ -f "${TEST_FILE}" ]; then
+              if [ cat "${TEST_FILE}" != "test-content" ]; then
+                printf "${TEST_FILE} was overridden!"
+                exit 1
+              fi
+            else
+              printf "${TEST_FILE}" was removed!"
+              exit 1
+            fi
+          elif [ -f "${TEST_FILE}" ]; then
+            printf "${TEST_FILE} still exists despite clean!"
+            eixt 1
+          fi
