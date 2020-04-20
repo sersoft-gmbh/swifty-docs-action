@@ -68,19 +68,4 @@ jobs:
       - name: Check version in index.html
         run: cat "${{matrix.output}}/index.html" | grep -q '${{matrix.module-version}}'
       - name: Check clean
-        run: |
-          TEST_FILE="${{matrix.output}}/_test_file.txt"
-          if [ "${{matrix.clean}}" != 'true' ]; then
-            if [ -f "${TEST_FILE}" ]; then
-              if [ $(cat "${TEST_FILE}") != "test-content" ]; then
-                printf "${TEST_FILE} was overridden!\n"
-                exit 1
-              fi
-            else
-              printf "${TEST_FILE} was removed!\n"
-              exit 1
-            fi
-          elif [ -f "${TEST_FILE}" ]; then
-            printf "${TEST_FILE} still exists despite clean!\n"
-            exit 1
-          fi
+        run: ./__test__/bin/check_clean.sh ${{matrix.output}} ${{matrix.clean}}
