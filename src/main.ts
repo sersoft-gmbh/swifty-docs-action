@@ -72,9 +72,6 @@ async function main() {
     const tempDir = await util.promisify(mkdtemp)('swift-docs-action');
     const docsJSONPath = path.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
-        if (core.isDebug()) {
-            moduleDocs.forEach(core.debug);
-        }
         const combinedDocs = moduleDocs.reduce((docs, doc) => docs.concat(JSON.parse(doc) as any[]), [] as any[]);
         await util.promisify(writeFile)(docsJSONPath, JSON.stringify(combinedDocs));
     });
@@ -86,10 +83,10 @@ async function main() {
     await core.group('Generating Jazzy docs', async () => {
         let additionalJazzyArgs: string[] = [];
         if (moduleVersion) {
-            additionalJazzyArgs.concat(['--module-version', moduleVersion]);
+            additionalJazzyArgs.push('--module-version', moduleVersion);
         }
         if (outputFolder) {
-            additionalJazzyArgs.concat(['--output', outputFolder]);
+            additionalJazzyArgs.push('--output', outputFolder);
         }
         await runCmd('jazzy', ['--sourcekitten-sourcefile', docsJSONPath].concat(additionalJazzyArgs), false);
     });
