@@ -1586,9 +1586,10 @@ async function main() {
     });
     const moduleDocs = await core.group('Generating JSON docs', async () => {
         let docs = [];
-        for (const product of packageJSON.products) {
+        const uniqueTargets = new Set(packageJSON.products.flatMap(p => p.targets));
+        for (const targetName of uniqueTargets) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name], false, sourceDir);
+            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', targetName], false, sourceDir);
             docs.push(moduleDoc);
         }
         return docs;
