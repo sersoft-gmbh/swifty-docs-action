@@ -1552,18 +1552,18 @@ const io = __importStar(__webpack_require__(51));
 const fs_1 = __webpack_require__(747);
 const util = __importStar(__webpack_require__(669));
 const path_1 = __importDefault(__webpack_require__(622));
-async function runCmd(cmd, args, failOnStdErr = true) {
+async function runCmd(cmd, args, failOnStdErr = true, cwd) {
     let stdOut = '';
-    await exec.exec(cmd, args, {
+    let execOptions = {
+        cwd: cwd,
         failOnStdErr: failOnStdErr,
         listeners: {
             stdline: (data) => stdOut += data
         }
-    });
+    };
+    await exec.exec(cmd, args, execOptions);
     return stdOut;
 }
-const _cwd = process.cwd();
-function cleanup() { process.chdir(_cwd); }
 async function main() {
     switch (process.platform) {
         case "darwin": break;
@@ -1579,23 +1579,20 @@ async function main() {
         runCmd('brew', ['install', 'sourcekitten']),
         runCmd('gem', ['install', 'jazzy', '--no-document']),
     ]));
-    const oldCwd = process.cwd();
-    process.chdir(sourceDir);
     const packageJSON = await core.group('Parse package', async () => {
         // Resolving is necessary to prevent `swift package dump-package` from having resolving output.
-        await runCmd('swift', ['package', 'resolve']);
-        return JSON.parse(await runCmd('swift', ['package', 'dump-package']));
+        await runCmd('swift', ['package', 'resolve'], true, sourceDir);
+        return JSON.parse(await runCmd('swift', ['package', 'dump-package'], true, sourceDir));
     });
     const moduleDocs = await core.group('Generating JSON docs', async () => {
         let docs = [];
         for (const product of packageJSON.products) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name]);
+            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name], false, sourceDir);
             docs.push(moduleDoc);
         }
         return docs;
     });
-    process.chdir(oldCwd);
     const tempDir = await util.promisify(fs_1.mkdtemp)('swift-docs-action');
     const docsJSONPath = path_1.default.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
@@ -1613,16 +1610,15 @@ async function main() {
         if (outputFolder) {
             additionalJazzyArgs.concat(['--output', outputFolder]);
         }
-        await runCmd('jazzy', ['--sourcekitten-sourcefile', docsJSONPath].concat(additionalJazzyArgs));
+        await runCmd('jazzy', ['--sourcekitten-sourcefile', docsJSONPath].concat(additionalJazzyArgs), false);
     });
     await core.group('Cleaning up', async () => await io.rmRF(tempDir));
 }
 try {
-    main().catch(error => core.setFailed(error.message)).finally(cleanup);
+    main().catch(error => core.setFailed(error.message));
 }
 catch (error) {
     core.setFailed(error.message);
-    cleanup();
 }
 
 
