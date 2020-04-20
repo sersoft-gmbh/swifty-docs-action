@@ -1,11 +1,9 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
-import {ExecOptions} from "@actions/exec/lib/interfaces";
 import * as io from '@actions/io';
 import {mkdtemp, writeFile} from "fs";
 import * as util from "util";
 import path from "path";
-
 
 interface ISwiftPackageNamedObject {
     name: string;
@@ -24,14 +22,13 @@ interface ISwiftPackage extends ISwiftPackageNamedObject {
 
 async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true, cwd?: string): Promise<string> {
     let stdOut = '';
-    let execOptions: ExecOptions = {
+    await exec.exec(cmd, args, {
         cwd: cwd,
         failOnStdErr: failOnStdErr,
         listeners: {
-            stdline: (data: string) => stdOut += data
+            stdout: (data: Buffer) => stdOut += data.toString()
         }
-    }
-    await exec.exec(cmd, args, execOptions);
+    });
     return stdOut;
 }
 
