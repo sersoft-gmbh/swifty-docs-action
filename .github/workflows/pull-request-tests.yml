@@ -58,7 +58,7 @@ jobs:
           TEST_FILE="${{matrix.output}}/_test_file.txt"
           if [ "${{matrix.clean}}" != 'true' ]; then
             if [ -f "${TEST_FILE}" ]; then
-              if [ cat "${TEST_FILE}" != "test-content" ]; then
+              if [ $(cat "${TEST_FILE}") != "test-content" ]; then
                 printf "${TEST_FILE} was overridden!"
                 exit 1
               fi
