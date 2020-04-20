@@ -38,7 +38,7 @@ jobs:
       - name: Create output folder with dummy file
         run: |
           mkdir -p "${{matrix.output}}"
-          echo "test-content" > "${{matrix.output}}/_test_file.txt"
+          printf "test-content" > "${{matrix.output}}/_test_file.txt"
       - uses: './'
         with:
           source: __test__/TestProject
@@ -59,14 +59,14 @@ jobs:
           if [ "${{matrix.clean}}" != 'true' ]; then
             if [ -f "${TEST_FILE}" ]; then
               if [ $(cat "${TEST_FILE}") != "test-content" ]; then
-                printf "${TEST_FILE} was overridden!"
+                printf "'${TEST_FILE}' was overridden!\n"
                 exit 1
               fi
             else
-              printf "${TEST_FILE}" was removed!"
+              printf "'${TEST_FILE}' was removed!\n"
               exit 1
             fi
           elif [ -f "${TEST_FILE}" ]; then
-            printf "${TEST_FILE} still exists despite clean!"
-            eixt 1
+            printf "'${TEST_FILE}' still exists despite clean!\n"
+            exit 1
           fi
