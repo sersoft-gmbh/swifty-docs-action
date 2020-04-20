@@ -55,11 +55,15 @@ async function main() {
         return JSON.parse(await runCmd('swift', swiftPackageBaseArgs.concat('dump-package'))) as ISwiftPackage;
     });
 
-    const moduleDocs = await core.group('Generating JSON docs', async () =>
-        await Promise.all(packageJSON.products.map(product =>
-            runCmd('sourcekitten', ['doc', '--spm-module', product.name, '--'].concat(swiftPackageArgs))
-        ))
-    );
+    const moduleDocs = await core.group('Generating JSON docs', async () => {
+        let docs: string[] = []
+        for (const product of packageJSON.products) {
+            // We need to synchronously generate docs or SPM will shoot itself.
+            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name, '--'].concat(swiftPackageArgs));
+            docs.push(moduleDoc);
+        }
+        return docs
+    });
 
     const tempDir = await util.promisify(mkdtemp)('swift-docs-action');
     const docsJSONPath = path.join(tempDir, 'combinedDocs.json');
