@@ -1554,14 +1554,13 @@ const util = __importStar(__webpack_require__(669));
 const path_1 = __importDefault(__webpack_require__(622));
 async function runCmd(cmd, args, failOnStdErr = true, cwd) {
     let stdOut = '';
-    let execOptions = {
+    await exec.exec(cmd, args, {
         cwd: cwd,
         failOnStdErr: failOnStdErr,
         listeners: {
-            stdline: (data) => stdOut += data
+            stdout: (data) => stdOut += data.toString()
         }
-    };
-    await exec.exec(cmd, args, execOptions);
+    });
     return stdOut;
 }
 async function main() {
