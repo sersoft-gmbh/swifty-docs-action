@@ -1597,6 +1597,9 @@ async function main() {
     const tempDir = await util.promisify(fs_1.mkdtemp)('swift-docs-action');
     const docsJSONPath = path_1.default.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
+        if (core.isDebug()) {
+            moduleDocs.forEach(core.debug);
+        }
         const combinedDocs = moduleDocs.reduce((docs, doc) => docs.concat(JSON.parse(doc)), []);
         await util.promisify(fs_1.writeFile)(docsJSONPath, JSON.stringify(combinedDocs));
     });
