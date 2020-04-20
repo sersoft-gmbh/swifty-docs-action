@@ -36,9 +36,7 @@ jobs:
       - name: Generate action code
         run: npm run deploy
       - name: Create output folder with dummy file
-        run: |
-          mkdir -p "${{matrix.output}}"
-          printf "test-content" > "${{matrix.output}}/_test_file.txt"
+        run: ./__test__/bin/create_clean_test_file.sh ${{matrix.output}}
       - uses: './'
         with:
           source: __test__/TestProject

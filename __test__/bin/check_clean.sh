@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 if [ $# -ne 2 ]; then
 	printf "Invalid argument count!\n"
 	printf "Usage: $0 OUTPUT_FOLDER CLEAN\n"
