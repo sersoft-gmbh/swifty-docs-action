@@ -26,6 +26,9 @@ async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true
     return stdOut;
 }
 
+const _cwd = process.cwd();
+function cleanup() { process.chdir(_cwd); }
+
 async function main() {
     switch (process.platform) {
         case "darwin": break;
@@ -37,8 +40,6 @@ async function main() {
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
     const cleanBuild = core.getInput('clean', { required: true }) == 'true';
-
-    const swiftPackageArgs = ['--package-path', sourceDir];
     core.endGroup();
 
     await core.group('Installing Dependencies', async () =>
@@ -48,22 +49,24 @@ async function main() {
         ])
     );
 
+    const oldCwd = process.cwd();
+    process.chdir(sourceDir);
     const packageJSON = await core.group('Parse package', async () => {
         // Resolving is necessary to prevent `swift package dump-package` from having resolving output.
-        const swiftPackageBaseArgs = ['package'].concat(swiftPackageArgs)
-        await runCmd('swift', swiftPackageBaseArgs.concat('resolve'));
-        return JSON.parse(await runCmd('swift', swiftPackageBaseArgs.concat('dump-package'))) as ISwiftPackage;
+        await runCmd('swift', ['package', 'resolve']);
+        return JSON.parse(await runCmd('swift', ['package', 'dump-package'])) as ISwiftPackage;
     });
 
     const moduleDocs = await core.group('Generating JSON docs', async () => {
         let docs: string[] = []
         for (const product of packageJSON.products) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name, '--'].concat(swiftPackageArgs));
+            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', product.name]);
             docs.push(moduleDoc);
         }
         return docs
     });
+    process.chdir(oldCwd);
 
     const tempDir = await util.promisify(mkdtemp)('swift-docs-action');
     const docsJSONPath = path.join(tempDir, 'combinedDocs.json');
@@ -91,7 +94,8 @@ async function main() {
 }
 
 try {
-    main().catch(error => core.setFailed(error.message));
+    main().catch(error => core.setFailed(error.message)).finally(cleanup);
 } catch (error) {
     core.setFailed(error.message);
+    cleanup();
 }

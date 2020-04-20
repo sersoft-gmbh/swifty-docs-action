@@ -1,11 +1,11 @@
 name: SwiftPM Jazzy Docs
-description: Generates and combines jazzy docs for all SwiftPM products of a package.
+description: Generates and combines jazzy docs for all products of a Swift package.
 author: ser.soft GmbH
 inputs:
   source:
-    description: The path to the Package.swift
+    description: The path to the Swift package.
     required: true
-    default: './'
+    default: ${{github.workspace}}
   module-version:
     description: The version to use when generating the docs.
     required: false

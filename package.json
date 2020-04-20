@@ -1,7 +1,7 @@
 {
   "name": "swifty-docs-action",
   "version": "1.0.0",
-  "description": "A GitHub Action that combines jazzy docs for all SwiftPM products",
+  "description": "A GitHub action generates and combines jazzy docs for all products of a Swift package.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
