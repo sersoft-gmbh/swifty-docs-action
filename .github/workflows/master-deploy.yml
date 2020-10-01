@@ -88,8 +88,8 @@ jobs:
           clean: ${{matrix.clean}}
           output: ${{matrix.output}}
           xcodebuild-destination: macOS
-      - name: Check for SPM build
-        run: test -d __test__/TestProject/.build
+      - name: Check for Xcode SPM build
+        run: test -d __test__/TestProject/.swiftpm
       - name: Check output path
         run: test -d "${{matrix.output}}"
       - name: Check index.html exists
