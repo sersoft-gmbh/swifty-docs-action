@@ -16,6 +16,9 @@ inputs:
     description: Whether a previous output should be removed before generating docs.
     required: true
     default: true
+  xcodebuild-destination:
+    description: Tells the action to use xcodebuild (instead of `swift build`) and passes the value as `-destination` to `xcodebuild`.
+    required: false
 runs:
   using: node12
   main: dist/index.js

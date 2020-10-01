@@ -8,7 +8,7 @@ jobs:
   test-defaults:
     runs-on: macos-latest
     steps:
-      - run: sudo xcode-select -s /Applications/Xcode_11.4.app/Contents/Developer
+      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
       - name: Install dependencies
         run: sudo npm i -g @zeit/ncc typescript
       - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         module-version: ['1.2.3', '0.0.1']
     runs-on: macos-latest
     steps:
-      - run: sudo xcode-select -s /Applications/Xcode_11.4.app/Contents/Developer
+      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
       - name: Install dependencies
         run: sudo npm i -g @zeit/ncc typescript
       - uses: actions/checkout@v2
@@ -45,6 +45,40 @@ jobs:
           output: ${{matrix.output}}
       - name: Check for SPM build
         run: test -d __test__/TestProject/.build
+      - name: Check output path
+        run: test -d "${{matrix.output}}"
+      - name: Check index.html exists
+        run: test -f "${{matrix.output}}/index.html"
+      - name: Check version in index.html
+        run: cat "${{matrix.output}}/index.html" | grep -q '${{matrix.module-version}}'
+      - name: Check clean
+        run: ./__test__/bin/check_clean.sh ${{matrix.output}} ${{matrix.clean}}
+
+  test-customized-xcode:
+    strategy:
+      matrix:
+        output: [ docs, otherDocs ]
+        clean: [ true, false ]
+        module-version: [ '1.2.3', '0.0.1' ]
+    runs-on: macos-latest
+    steps:
+      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
+      - name: Install dependencies
+        run: sudo npm i -g @zeit/ncc typescript
+      - uses: actions/checkout@v2
+      - name: Generate action code
+        run: npm run deploy
+      - name: Create output folder with dummy file
+        run: ./__test__/bin/create_clean_test_file.sh ${{matrix.output}}
+      - uses: './'
+        with:
+          source: __test__/TestProject
+          module-version: ${{matrix.module-version}}
+          clean: ${{matrix.clean}}
+          output: ${{matrix.output}}
+          xcodebuild-destination: macOS
+      - name: Check for Xcode SPM build
+        run: test -d __test__/TestProject/.swiftpm
       - name: Check output path
         run: test -d "${{matrix.output}}"
       - name: Check index.html exists

@@ -43,6 +43,7 @@ async function main() {
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
     const cleanBuild = core.getInput('clean', { required: true }) == 'true';
+    const xcodebuildDestination = core.getInput('xcodebuild-destination');
     core.endGroup();
 
     await core.group('Installing Dependencies', async () =>
@@ -63,7 +64,13 @@ async function main() {
         const uniqueTargets = new Set(packageJSON.products.flatMap(p => p.targets));
         for (const targetName of uniqueTargets) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            const moduleDoc = await runCmd('sourcekitten', ['doc', '--spm-module', targetName], false, sourceDir);
+            let targetArgs = ['doc'];
+            if (xcodebuildDestination) {
+                targetArgs.push('--module-name', targetName, '--', '-scheme', targetName, '-destination', xcodebuildDestination);
+            } else {
+                targetArgs.push('--spm-module', targetName);
+            }
+            const moduleDoc = await runCmd('sourcekitten', targetArgs, false, sourceDir);
             docs.push(moduleDoc);
         }
         return docs;
