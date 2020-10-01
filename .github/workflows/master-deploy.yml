@@ -87,7 +87,7 @@ jobs:
           module-version: ${{matrix.module-version}}
           clean: ${{matrix.clean}}
           output: ${{matrix.output}}
-          xcodebuild-destination: macOS
+          xcodebuild-destination: 'platform=macOS'
       - name: Check for Xcode SPM build
         run: test -d __test__/TestProject/.swiftpm
       - name: Check output path
