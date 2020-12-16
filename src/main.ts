@@ -64,11 +64,11 @@ async function main() {
         const uniqueTargets = new Set(packageJSON.products.flatMap(p => p.targets));
         for (const targetName of uniqueTargets) {
             // We need to synchronously generate docs or SPM will shoot itself.
-            let targetArgs = ['doc'];
+            let targetArgs = ['doc', '--module-name', targetName];
             if (xcodebuildDestination) {
-                targetArgs.push('--module-name', targetName, '--', '-scheme', targetName, '-destination', xcodebuildDestination);
+                targetArgs.push('--', '-scheme', targetName, '-destination', xcodebuildDestination);
             } else {
-                targetArgs.push('--spm-module', targetName);
+                targetArgs.push('--spm');
             }
             const moduleDoc = await runCmd('sourcekitten', targetArgs, false, sourceDir);
             docs.push(moduleDoc);
