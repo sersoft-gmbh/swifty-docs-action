@@ -1686,8 +1686,8 @@ async function main() {
     const xcodebuildDestination = core.getInput('xcodebuild-destination');
     core.endGroup();
     await core.group('Installing Dependencies', async () => await Promise.all([
-        runCmd('brew', ['install', 'sourcekitten']),
-        runCmd('gem', ['install', 'jazzy', '--no-document']),
+        runCmd('brew', ['install', 'sourcekitten'], false),
+        runCmd('gem', ['install', 'jazzy', '--no-document'], false),
     ]));
     const packageJSON = await core.group('Parse package', async () => {
         // Resolving is necessary to prevent `swift package dump-package` from having resolving output.
