@@ -48,8 +48,8 @@ async function main() {
 
     await core.group('Installing Dependencies', async () =>
         await Promise.all([
-            runCmd('brew', ['install', 'sourcekitten']),
-            runCmd('gem', ['install', 'jazzy', '--no-document']),
+            runCmd('brew', ['install', 'sourcekitten'], false),
+            runCmd('gem', ['install', 'jazzy', '--no-document'], false),
         ])
     );
 
