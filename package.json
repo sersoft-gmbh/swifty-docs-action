@@ -28,6 +28,6 @@
     "@actions/io": "^1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^12.20.10"
+    "@types/node": "^15.0.2"
   }
 }
