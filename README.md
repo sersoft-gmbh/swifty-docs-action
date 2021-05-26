@@ -4,8 +4,6 @@
 
 This action generates and combines jazzy docs for all products of a Swift package.
 
-Note that this action needs to run on macOS. All other platforms will fail!
-
 ## Inputs
 
 ### `source`
@@ -35,6 +33,8 @@ Thus, there are a set of requirements that go along with the `xcodebuild-destina
 
 - All targets that are referenced by a product *must* have a corresponding scheme. This can either happen by Xcode's automatic scheme generation, or manually (in which case the `.swiftpm` must be commited to the repository).
 - The `xcodebuild-destination` is applied as `-destination` to **all** builds. Selectively controlling this might come in a future update. 
+
+Note that this parameter is only respected when run on macOS.
 
 ## Example Usage
 
