@@ -36,7 +36,7 @@ async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true
 }
 
 async function installSourceKitten(): Promise<void> {
-    if (process.platform == "darwin") {
+    if (process.platform === 'darwin') {
         await runCmd('brew', ['install', 'sourcekitten'], false)
     } else {
         const gh = new Octokit();
@@ -45,22 +45,26 @@ async function installSourceKitten(): Promise<void> {
             repo: 'SourceKitten'
         });
         if (!release.zipball_url) {
-            throw new Error("Missing zipball_url on latest SourceKitten release!")
+            throw new Error('Missing zipball_url on latest SourceKitten release!')
         }
         const tempPath = await util.promisify(fs.mkdtemp)('sourcekitten');
-        const zipDst = path.join(tempPath, "sourcekitten.zip");
-        await tools.downloadTool(release.zipball_url, zipDst);
-        const unzipDst = path.join(tempPath, "sourcekitten");
-        await tools.extractZip(zipDst, unzipDst);
-        await runCmd('make', ['prefix_install'], false, unzipDst);
+        try {
+            const zipDst = await tools.downloadTool(release.zipball_url);
+            core.debug(`Downloaded zip to ${zipDst}...`);
+            const unzipDst = await tools.extractZip(zipDst);
+            core.debug(`Extracted zip to ${unzipDst}...`);
+            await runCmd('make', ['prefix_install'], false, unzipDst);
+        } finally {
+            await io.rmRF(tempPath);
+        }
     }
 }
 
 async function main() {
     switch (process.platform) {
-        case "darwin": break;
-        case "linux": break;
-        default: throw new Error("This action only supports macOS and Linux!");
+        case 'darwin': break;
+        case 'linux': break;
+        default: throw new Error('This action only supports macOS and Linux!');
     }
 
     core.startGroup('Validating input');
