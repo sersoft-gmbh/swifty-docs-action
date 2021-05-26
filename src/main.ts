@@ -35,26 +35,37 @@ async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true
     return stdOut;
 }
 
-async function installSourceKitten(): Promise<void> {
+async function downloadSourceKitten(): Promise<void> {
+    const gh = new Octokit();
+    const { data: release } = await gh.rest.repos.getLatestRelease({
+        owner: 'jpsim',
+        repo: 'SourceKitten'
+    });
+    if (!release.zipball_url) {
+        throw new Error('Missing zipball_url on latest SourceKitten release!')
+    }
+    const zipDst = await tools.downloadTool(release.zipball_url);
+    core.debug(`Downloaded zip to ${zipDst}...`);
+    const unzipDst = await tools.extractZip(zipDst);
+    core.debug(`Extracted zip to ${unzipDst}...`);
+    const contents = await util.promisify(fs.readdir)(unzipDst);
+    core.debug(`Contents of extraction destination: ${contents}`);
+    const folder = contents.find(c => c.toLowerCase().startsWith('jpsim-sourcekitten')) ?? contents[0];
+    await runCmd('sudo', ['make', 'prefix_install'], false, path.join(unzipDst, folder));
+
+}
+
+async function installDependencies(): Promise<void> {
     if (process.platform === 'darwin') {
-        await runCmd('brew', ['install', 'sourcekitten'], false)
+        await Promise.all([
+            runCmd('brew', ['install', 'sourcekitten'], false),
+            runCmd('gem', ['install', 'jazzy', '--no-document'], false),
+        ]);
     } else {
-        const gh = new Octokit();
-        const { data: release } = await gh.rest.repos.getLatestRelease({
-            owner: 'jpsim',
-            repo: 'SourceKitten'
-        });
-        if (!release.zipball_url) {
-            throw new Error('Missing zipball_url on latest SourceKitten release!')
-        }
-        const zipDst = await tools.downloadTool(release.zipball_url);
-        core.debug(`Downloaded zip to ${zipDst}...`);
-        const unzipDst = await tools.extractZip(zipDst);
-        core.debug(`Extracted zip to ${unzipDst}...`);
-        const contents = await util.promisify(fs.readdir)(unzipDst);
-        core.debug(`Contents of extraction destination: ${contents}`);
-        const folder = contents.find(c => c.toLowerCase().startsWith('jpsim-sourcekitten')) ?? contents[0];
-        await runCmd('make', ['prefix_install'], false, path.join(unzipDst, folder));
+        await Promise.all([
+            downloadSourceKitten(),
+            runCmd('sudo', ['gem', 'install', 'jazzy', '--no-document'], false),
+        ]);
     }
 }
 
@@ -78,12 +89,7 @@ async function main() {
     }
     core.endGroup();
 
-    await core.group('Installing Dependencies', async () =>
-        await Promise.all([
-            installSourceKitten(),
-            runCmd('gem', ['install', 'jazzy', '--no-document'], false),
-        ])
-    );
+    await core.group('Installing Dependencies', async () => await installDependencies());
 
     const packageJSON = await core.group('Parse package', async () => {
         // Resolving is necessary to prevent `swift package dump-package` from having resolving output.
