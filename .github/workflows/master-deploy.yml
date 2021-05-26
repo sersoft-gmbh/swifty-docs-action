@@ -30,9 +30,20 @@ jobs:
 
   test-defaults:
     needs: deploy-action-code
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest ]
+    runs-on: ${{matrix.os}}
     steps:
-      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
+      - uses: maxim-lobanov/setup-xcode@v1.2.3
+        if: runner.os == 'macOS'
+        with:
+          xcode-version: ^12.4
+      - name: Install Swift
+        if: runner.os == 'Linux'
+        uses: sersoft-gmbh/SwiftyActions@v1.2
+        with:
+          release-version: 5.4
       - uses: actions/checkout@v2
       - uses: sersoft-gmbh/swifty-docs-action@master
         with:
@@ -45,12 +56,21 @@ jobs:
     needs: deploy-action-code
     strategy:
       matrix:
+        os: [macos-latest, ubuntu-latest]
         output: [docs, otherDocs]
         clean: [true, false]
         module-version: ['1.2.3', '0.0.1']
-    runs-on: macos-latest
+    runs-on: ${{matrix.os}}
     steps:
-      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
+      - uses: maxim-lobanov/setup-xcode@v1.2.3
+        if: runner.os == 'macOS'
+        with:
+          xcode-version: ^12.4
+      - name: Install Swift
+        if: runner.os == 'Linux'
+        uses: sersoft-gmbh/SwiftyActions@v1.2
+        with:
+          release-version: 5.4
       - uses: actions/checkout@v2
       - name: Create output folder with dummy file
         run: ./__test__/bin/create_clean_test_file.sh ${{matrix.output}}
@@ -80,7 +100,9 @@ jobs:
         module-version: [ '1.2.3', '0.0.1' ]
     runs-on: macos-latest
     steps:
-      - run: sudo xcode-select -s /Applications/Xcode_12.app/Contents/Developer
+      - uses: maxim-lobanov/setup-xcode@v1.2.3
+        with:
+          xcode-version: ^12.4
       - uses: actions/checkout@v2
       - name: Create output folder with dummy file
         run: ./__test__/bin/create_clean_test_file.sh ${{matrix.output}}
