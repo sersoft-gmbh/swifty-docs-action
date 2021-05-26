@@ -1,9 +1,12 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import * as tools from '@actions/tool-cache';
 import * as io from '@actions/io';
+import { Octokit } from "@octokit/rest";
 import {mkdtemp, writeFile} from "fs";
 import * as util from "util";
 import path from "path";
+import fs from "fs";
 
 interface ISwiftPackageNamedObject {
     name: string;
@@ -32,6 +35,27 @@ async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true
     return stdOut;
 }
 
+async function installSourceKitten(): Promise<void> {
+    if (process.platform == "darwin") {
+        await runCmd('brew', ['install', 'sourcekitten'], false)
+    } else {
+        const gh = new Octokit();
+        const { data: release } = await gh.rest.repos.getLatestRelease({
+            owner: 'jpsim',
+            repo: 'SourceKitten'
+        });
+        if (!release.zipball_url) {
+            throw new Error("Missing zipball_url on latest SourceKitten release!")
+        }
+        const tempPath = await util.promisify(fs.mkdtemp)('sourcekitten');
+        const zipDst = path.join(tempPath, "sourcekitten.zip");
+        await tools.downloadTool(release.zipball_url, zipDst);
+        const unzipDst = path.join(tempPath, "sourcekitten");
+        await tools.extractZip(zipDst, unzipDst);
+        await runCmd('make', ['prefix_install'], false, unzipDst);
+    }
+}
+
 async function main() {
     switch (process.platform) {
         case "darwin": break;
@@ -54,7 +78,7 @@ async function main() {
 
     await core.group('Installing Dependencies', async () =>
         await Promise.all([
-            runCmd('brew', ['install', 'sourcekitten'], false),
+            installSourceKitten(),
             runCmd('gem', ['install', 'jazzy', '--no-document'], false),
         ])
     );
