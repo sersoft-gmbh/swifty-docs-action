@@ -47,16 +47,14 @@ async function installSourceKitten(): Promise<void> {
         if (!release.zipball_url) {
             throw new Error('Missing zipball_url on latest SourceKitten release!')
         }
-        const tempPath = await util.promisify(fs.mkdtemp)('sourcekitten');
-        try {
-            const zipDst = await tools.downloadTool(release.zipball_url);
-            core.debug(`Downloaded zip to ${zipDst}...`);
-            const unzipDst = await tools.extractZip(zipDst);
-            core.debug(`Extracted zip to ${unzipDst}...`);
-            await runCmd('make', ['prefix_install'], false, unzipDst);
-        } finally {
-            await io.rmRF(tempPath);
-        }
+        const zipDst = await tools.downloadTool(release.zipball_url);
+        core.debug(`Downloaded zip to ${zipDst}...`);
+        const unzipDst = await tools.extractZip(zipDst);
+        core.debug(`Extracted zip to ${unzipDst}...`);
+        const contents = await util.promisify(fs.readdir)(unzipDst);
+        core.debug(`Contents of extraction destination: ${contents}`);
+        const folder = contents.find(c => c.toLowerCase().startsWith('jpsim-sourcekitten')) ?? contents[0];
+        await runCmd('make', ['prefix_install'], false, path.join(unzipDst, folder));
     }
 }
 
