@@ -35,7 +35,8 @@ async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true
 async function main() {
     switch (process.platform) {
         case "darwin": break;
-        default: throw new Error("This action only supports macOS!");
+        case "linux": break;
+        default: throw new Error("This action only supports macOS and Linux!");
     }
 
     core.startGroup('Validating input');
@@ -43,7 +44,12 @@ async function main() {
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
     const cleanBuild = core.getInput('clean', { required: true }) == 'true';
-    const xcodebuildDestination = core.getInput('xcodebuild-destination');
+    let xcodebuildDestination: string | null;
+    if (process.platform == "darwin") {
+        xcodebuildDestination = core.getInput('xcodebuild-destination');
+    } else {
+        xcodebuildDestination = null;
+    }
     core.endGroup();
 
     await core.group('Installing Dependencies', async () =>
