@@ -11,7 +11,7 @@ fi
 TEST_FILE="${1}/_test_file.txt"
 if [ "${2}" != 'true' ]; then
   if [ -f "${TEST_FILE}" ]; then
-    if [ "$(cat "${TEST_FILE}")" != "test-content\n" ]; then
+    if [ "$(cat "${TEST_FILE}")" != "test-content" ]; then
       printf '%s' "${TEST_FILE} was overridden!\n"
       exit 1
     fi
