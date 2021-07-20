@@ -21,7 +21,7 @@ jobs:
         with:
           release-version: 5.4
       - name: Install dependencies
-        run: sudo npm i -g @zeit/ncc typescript
+        run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v2
       - name: Generate action code
         run: npm run deploy
@@ -51,7 +51,7 @@ jobs:
         with:
           release-version: 5.4
       - name: Install dependencies
-        run: sudo npm i -g @zeit/ncc typescript
+        run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v2
       - name: Generate action code
         run: npm run deploy
@@ -86,7 +86,7 @@ jobs:
         with:
           xcode-version: ^12.4
       - name: Install dependencies
-        run: sudo npm i -g @zeit/ncc typescript
+        run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v2
       - name: Generate action code
         run: npm run deploy
