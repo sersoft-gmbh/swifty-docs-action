@@ -20,6 +20,7 @@ jobs:
         uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
+          github-token: ${{secrets.GITHUB_TOKEN}}
       - name: Install dependencies
         run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v2
@@ -50,6 +51,7 @@ jobs:
         uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
+          github-token: ${{secrets.GITHUB_TOKEN}}
       - name: Install dependencies
         run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v2
