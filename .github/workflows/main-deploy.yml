@@ -44,6 +44,7 @@ jobs:
         uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
+          github-token: ${{secrets.GITHUB_TOKEN}}
       - uses: actions/checkout@v2
       - uses: sersoft-gmbh/swifty-docs-action@master
         with:
@@ -71,6 +72,7 @@ jobs:
         uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
+          github-token: ${{secrets.GITHUB_TOKEN}}
       - uses: actions/checkout@v2
       - name: Create output folder with dummy file
         run: ./__test__/bin/create_clean_test_file.sh ${{matrix.output}}
