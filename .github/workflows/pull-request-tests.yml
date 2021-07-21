@@ -17,7 +17,7 @@ jobs:
           xcode-version: ^12.4
       - name: Install Swift
         if: runner.os == 'Linux'
-        uses: sersoft-gmbh/SwiftyActions@v1.2
+        uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
       - name: Install dependencies
@@ -47,7 +47,7 @@ jobs:
           xcode-version: ^12.4
       - name: Install Swift
         if: runner.os == 'Linux'
-        uses: sersoft-gmbh/SwiftyActions@v1.2
+        uses: sersoft-gmbh/SwiftyActions@v1.3
         with:
           release-version: 5.4
       - name: Install dependencies
