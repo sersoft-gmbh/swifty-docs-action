@@ -35,19 +35,14 @@ const tools = __importStar(__nccwpck_require__(3594));
 const io = __importStar(__nccwpck_require__(6202));
 const rest_1 = __nccwpck_require__(7276);
 const fs_1 = __nccwpck_require__(5747);
-const util = __importStar(__nccwpck_require__(1669));
 const path_1 = __importDefault(__nccwpck_require__(5622));
-const fs_2 = __importDefault(__nccwpck_require__(5747));
 async function runCmd(cmd, args, failOnStdErr = true, cwd) {
-    let stdOut = '';
-    await exec.exec(cmd, args, {
+    const output = await exec.getExecOutput(cmd, args, {
         cwd: cwd,
         failOnStdErr: failOnStdErr,
-        listeners: {
-            stdout: (data) => stdOut += data.toString()
-        }
+        silent: !core.isDebug()
     });
-    return stdOut;
+    return output.stdout;
 }
 async function downloadSourceKitten() {
     var _a;
@@ -63,7 +58,7 @@ async function downloadSourceKitten() {
     core.debug(`Downloaded zip to ${zipDst}...`);
     const unzipDst = await tools.extractZip(zipDst);
     core.debug(`Extracted zip to ${unzipDst}...`);
-    const contents = await util.promisify(fs_2.default.readdir)(unzipDst);
+    const contents = await fs_1.promises.readdir(unzipDst);
     core.debug(`Contents of extraction destination: ${contents}`);
     const folder = (_a = contents.find(c => c.toLowerCase().startsWith('jpsim-sourcekitten'))) !== null && _a !== void 0 ? _a : contents[0];
     await runCmd('sudo', ['make', 'prefix_install'], false, path_1.default.join(unzipDst, folder));
@@ -92,9 +87,9 @@ async function main() {
     const sourceDir = core.getInput('source', { required: true });
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
-    const cleanBuild = core.getInput('clean', { required: true }) == 'true';
+    const cleanBuild = core.getBooleanInput('clean', { required: true });
     let xcodebuildDestination;
-    if (process.platform == "darwin") {
+    if (process.platform === 'darwin') {
         xcodebuildDestination = core.getInput('xcodebuild-destination');
     }
     else {
@@ -124,11 +119,11 @@ async function main() {
         }
         return docs;
     });
-    const tempDir = await util.promisify(fs_1.mkdtemp)('swift-docs-action');
+    const tempDir = await fs_1.promises.mkdtemp('swift-docs-action');
     const docsJSONPath = path_1.default.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
         const combinedDocs = moduleDocs.reduce((docs, doc) => docs.concat(JSON.parse(doc)), []);
-        await util.promisify(fs_1.writeFile)(docsJSONPath, JSON.stringify(combinedDocs));
+        await fs_1.promises.writeFile(docsJSONPath, JSON.stringify(combinedDocs));
     });
     if (cleanBuild && outputFolder) {
         await core.group('Cleaning previous output', async () => await io.rmRF(outputFolder));
