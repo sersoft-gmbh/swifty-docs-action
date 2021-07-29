@@ -2,11 +2,9 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as tools from '@actions/tool-cache';
 import * as io from '@actions/io';
-import { Octokit } from "@octokit/rest";
-import {mkdtemp, writeFile} from "fs";
-import * as util from "util";
-import path from "path";
-import fs from "fs";
+import { Octokit } from '@octokit/rest';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 interface ISwiftPackageNamedObject {
     name: string;
@@ -24,15 +22,12 @@ interface ISwiftPackage extends ISwiftPackageNamedObject {
 }
 
 async function runCmd(cmd: string, args?: string[], failOnStdErr: boolean = true, cwd?: string): Promise<string> {
-    let stdOut = '';
-    await exec.exec(cmd, args, {
+    const output = await exec.getExecOutput(cmd, args, {
         cwd: cwd,
         failOnStdErr: failOnStdErr,
-        listeners: {
-            stdout: (data: Buffer) => stdOut += data.toString()
-        }
+        silent: !core.isDebug()
     });
-    return stdOut;
+    return output.stdout;
 }
 
 async function downloadSourceKitten(): Promise<void> {
@@ -42,17 +37,16 @@ async function downloadSourceKitten(): Promise<void> {
         repo: 'SourceKitten'
     });
     if (!release.zipball_url) {
-        throw new Error('Missing zipball_url on latest SourceKitten release!')
+        throw new Error('Missing zipball_url on latest SourceKitten release!');
     }
     const zipDst = await tools.downloadTool(release.zipball_url);
     core.debug(`Downloaded zip to ${zipDst}...`);
     const unzipDst = await tools.extractZip(zipDst);
     core.debug(`Extracted zip to ${unzipDst}...`);
-    const contents = await util.promisify(fs.readdir)(unzipDst);
+    const contents = await fs.readdir(unzipDst);
     core.debug(`Contents of extraction destination: ${contents}`);
     const folder = contents.find(c => c.toLowerCase().startsWith('jpsim-sourcekitten')) ?? contents[0];
     await runCmd('sudo', ['make', 'prefix_install'], false, path.join(unzipDst, folder));
-
 }
 
 async function installDependencies(): Promise<void> {
@@ -80,9 +74,9 @@ async function main() {
     const sourceDir = core.getInput('source', { required: true });
     const moduleVersion = core.getInput('module-version');
     const outputFolder = core.getInput('output');
-    const cleanBuild = core.getInput('clean', { required: true }) == 'true';
+    const cleanBuild = core.getBooleanInput('clean', { required: true }) ;
     let xcodebuildDestination: string | null;
-    if (process.platform == "darwin") {
+    if (process.platform === 'darwin') {
         xcodebuildDestination = core.getInput('xcodebuild-destination');
     } else {
         xcodebuildDestination = null;
@@ -114,11 +108,11 @@ async function main() {
         return docs;
     });
 
-    const tempDir = await util.promisify(mkdtemp)('swift-docs-action');
+    const tempDir = await fs.mkdtemp('swift-docs-action');
     const docsJSONPath = path.join(tempDir, 'combinedDocs.json');
     await core.group('Combining docs', async () => {
         const combinedDocs = moduleDocs.reduce((docs, doc) => docs.concat(JSON.parse(doc) as any[]), [] as any[]);
-        await util.promisify(writeFile)(docsJSONPath, JSON.stringify(combinedDocs));
+        await fs.writeFile(docsJSONPath, JSON.stringify(combinedDocs));
     });
 
     if (cleanBuild && outputFolder) {
@@ -140,7 +134,7 @@ async function main() {
 }
 
 try {
-    main().catch(error => core.setFailed(error.message))
+    main().catch(error => core.setFailed(error.message));
 } catch (error) {
     core.setFailed(error.message);
 }
