@@ -1,6 +1,6 @@
 # SwiftPM Jazzy Docs
 
-[![Deploy](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/main-deploy.yml/badge.svg)](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/main-deploy.yml)
+[![Tests](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/tests.yml)
 
 This action generates and combines jazzy docs for all products of a Swift package.
 
