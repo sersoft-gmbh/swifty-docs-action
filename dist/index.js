@@ -4935,7 +4935,7 @@ var pluginRequestLog = __nccwpck_require__(6173);
 var pluginPaginateRest = __nccwpck_require__(9445);
 var pluginRestEndpointMethods = __nccwpck_require__(8223);
 
-const VERSION = "18.9.0";
+const VERSION = "18.9.1";
 
 const Octokit = core.Octokit.plugin(pluginRequestLog.requestLog, pluginRestEndpointMethods.legacyRestEndpointMethods, pluginPaginateRest.paginateRest).defaults({
   userAgent: `octokit-rest.js/${VERSION}`
@@ -6296,7 +6296,7 @@ const Endpoints = {
   }
 };
 
-const VERSION = "5.7.0";
+const VERSION = "5.8.0";
 
 function endpointsToMethods(octokit, endpointsMap) {
   const newMethods = {};
@@ -6417,7 +6417,7 @@ var isPlainObject = __nccwpck_require__(987);
 var nodeFetch = _interopDefault(__nccwpck_require__(2460));
 var requestError = __nccwpck_require__(6385);
 
-const VERSION = "5.6.0";
+const VERSION = "5.6.1";
 
 function getBufferResponse(response) {
   return response.arrayBuffer();
