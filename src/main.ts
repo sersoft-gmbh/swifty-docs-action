@@ -48,7 +48,7 @@ async function downloadSourceKitten(): Promise<void> {
             owner: 'jpsim',
             repo: 'SourceKitten'
         });
-        zipballURL = repo.archive_url.replace('{archive_format}', 'zip').replace('{/ref}', '');
+        zipballURL = repo.archive_url.replace('{archive_format}', 'zipball').replace('{/ref}', '');
     }
     const zipDst = await tools.downloadTool(zipballURL);
     core.debug(`Downloaded zip to ${zipDst}...`);
