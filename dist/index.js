@@ -47,14 +47,26 @@ async function runCmd(cmd, args, failOnStdErr = true, cwd) {
 async function downloadSourceKitten() {
     var _a;
     const gh = new rest_1.Octokit();
+    let zipballURL;
     const { data: release } = await gh.rest.repos.getLatestRelease({
         owner: 'jpsim',
         repo: 'SourceKitten'
     });
-    if (!release.zipball_url) {
-        throw new Error('Missing zipball_url on latest SourceKitten release!');
+    if (release.tag_name != '0.31.0') { // Doesn't build on linux...
+        if (!release.zipball_url) {
+            throw new Error('Missing zipball_url on latest SourceKitten release!');
+        }
+        zipballURL = release.zipball_url;
     }
-    const zipDst = await tools.downloadTool(release.zipball_url);
+    else {
+        // We use the main branch for now. Change this back once SourceKitten has released a working version.
+        const { data: repo } = await gh.rest.repos.get({
+            owner: 'jpsim',
+            repo: 'SourceKitten'
+        });
+        zipballURL = repo.archive_url.replace('{archive_format}', 'zip').replace('{/ref}', '');
+    }
+    const zipDst = await tools.downloadTool(zipballURL);
     core.debug(`Downloaded zip to ${zipDst}...`);
     const unzipDst = await tools.extractZip(zipDst);
     core.debug(`Extracted zip to ${unzipDst}...`);
