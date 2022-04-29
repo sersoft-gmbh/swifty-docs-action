@@ -31,6 +31,6 @@
     "@octokit/rest": "^18.12.0"
   },
   "devDependencies": {
-    "@types/node": "^16.11.31"
+    "@types/node": "^16.11.32"
   }
 }
