@@ -29,9 +29,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(24));
 const exec = __importStar(__nccwpck_require__(423));
+const path_1 = __importDefault(__nccwpck_require__(17));
 async function runCmd(cmd, args, cwd) {
     const output = await exec.getExecOutput(cmd, args, {
         cwd: cwd,
@@ -42,12 +46,19 @@ async function runCmd(cmd, args, cwd) {
 function nonEmpty(t) {
     return t.length > 0 ? t : null;
 }
+function mapNonNull(t, fn) {
+    return t ? fn(t) : null;
+}
 function docCFlags(options) {
     let args = [];
     if (options.disableIndexing)
         args.push('--disable-indexing');
     if (options.transformForStaticHosting)
         args.push('--transform-for-static-hosting');
+    if (options.enableInheritedDocs)
+        args.push('--enable-inherited-docs');
+    if (options.bundleVersion)
+        args.push('--bundle-version', options.bundleVersion);
     if (options.hostingBasePath)
         args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath)
@@ -65,12 +76,16 @@ async function generateDocsUsingSPM(packagePath, targets, options) {
     args.push(...docCFlags(options));
     return await runCmd('swift', args, packagePath);
 }
-async function generateDocsUsingXcode(packagePath, options, scheme, destination) {
+async function generateDocsUsingXcode(packagePath, options, doccSupportsOutputPath, scheme, destination) {
     let args = ['docbuild'];
     if (scheme)
         args.push('-scheme', scheme);
     if (destination)
         args.push('-destination', destination);
+    if (!doccSupportsOutputPath && options.outputPath) {
+        args.push(`DOCC_OUTPUT_DIR="${options.outputPath}"`);
+        options.outputPath = null;
+    }
     // TODO: Do we need to do this?
     // const safeFlags = docCFlags(options).map(t => t.includes(' ') ? `'${t}'` : t).join(' ');
     args.push(`OTHER_DOCC_FLAGS="${docCFlags(options).join(' ')}"`);
@@ -84,7 +99,9 @@ async function main() {
     }
     core.startGroup('Validating input');
     const packagePath = core.getInput('package-path', { required: true });
+    const packageVersion = core.getInput('package-version');
     const disableIndexing = core.getBooleanInput('disable-indexing', { required: true });
+    const enableInheritedDocs = core.getBooleanInput('enable-inherited-docs', { required: true });
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
@@ -103,15 +120,21 @@ async function main() {
         xcodebuildDestination = null;
     }
     core.endGroup();
+    const supportsOutputPath = !useXcodebuild || await core.group('Determining docc setup', async () => {
+        const output = await runCmd('xcrun', ['docc', 'convert', '--help']);
+        return output.includes('--output-path');
+    });
     await core.group('Generating documentation', async () => {
         const options = {
             disableIndexing: disableIndexing,
             transformForStaticHosting: transformForStaticHosting,
+            enableInheritedDocs: enableInheritedDocs,
+            bundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
-            outputPath: nonEmpty(outputDir),
+            outputPath: mapNonNull(nonEmpty(outputDir), path_1.default.resolve),
         };
         if (useXcodebuild) {
-            await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
+            await generateDocsUsingXcode(packagePath, options, supportsOutputPath, xcodebuildScheme, xcodebuildDestination);
         }
         else {
             await generateDocsUsingSPM(packagePath, targets, options);
