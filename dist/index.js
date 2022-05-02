@@ -77,7 +77,7 @@ async function generateDocsUsingSPM(packagePath, targets, options) {
     args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }
-async function generateDocsUsingXcode(packagePath, options, scheme, destination) {
+async function generateDocsUsingXcode(packagePath, options, scheme, destination, otherArgs) {
     let args = ['docbuild'];
     if (scheme)
         args.push('-scheme', scheme);
@@ -85,6 +85,7 @@ async function generateDocsUsingXcode(packagePath, options, scheme, destination)
         args.push('-destination', destination);
     const safeFlags = docCFlags(options, false).map(t => t.includes(' ') ? `"${t}"` : t).join(' ');
     args.push(`OTHER_DOCC_FLAGS=${safeFlags}`);
+    args.push(...otherArgs);
     return await runCmd('xcodebuild', args, packagePath);
 }
 async function main() {
@@ -106,15 +107,18 @@ async function main() {
     let targets;
     let xcodebuildScheme;
     let xcodebuildDestination;
+    let otherXcodebuildArgs;
     if (useXcodebuild) {
         targets = [];
         xcodebuildScheme = core.getInput('xcodebuild-scheme', { required: true });
         xcodebuildDestination = core.getInput('xcodebuild-destination', { required: true });
+        otherXcodebuildArgs = core.getMultilineInput('other-xcodebuild-arguments');
     }
     else {
         targets = core.getMultilineInput('targets');
         xcodebuildScheme = null;
         xcodebuildDestination = null;
+        otherXcodebuildArgs = [];
     }
     core.endGroup();
     await core.group('Generating documentation', async () => {
@@ -128,7 +132,7 @@ async function main() {
             otherArgs: otherDoccArgs,
         };
         if (useXcodebuild) {
-            await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
+            await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination, otherXcodebuildArgs);
         }
         else {
             await generateDocsUsingSPM(packagePath, targets, options);
