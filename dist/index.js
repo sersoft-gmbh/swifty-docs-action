@@ -76,19 +76,15 @@ async function generateDocsUsingSPM(packagePath, targets, options) {
     args.push(...docCFlags(options));
     return await runCmd('swift', args, packagePath);
 }
-async function generateDocsUsingXcode(packagePath, options, doccSupportsOutputPath, scheme, destination) {
+async function generateDocsUsingXcode(packagePath, options, scheme, destination) {
     let args = ['docbuild'];
     if (scheme)
         args.push('-scheme', scheme);
     if (destination)
         args.push('-destination', destination);
-    if (!doccSupportsOutputPath && options.outputPath) {
-        args.push(`DOCC_OUTPUT_DIR="${options.outputPath}"`);
-        options.outputPath = null;
-    }
     // TODO: Do we need to do this?
     // const safeFlags = docCFlags(options).map(t => t.includes(' ') ? `'${t}'` : t).join(' ');
-    args.push(`OTHER_DOCC_FLAGS="${docCFlags(options).join(' ')}"`);
+    args.push(`OTHER_DOCC_FLAGS=${docCFlags(options).join(' ')}`);
     return await runCmd('xcodebuild', args, packagePath);
 }
 async function main() {
@@ -120,10 +116,6 @@ async function main() {
         xcodebuildDestination = null;
     }
     core.endGroup();
-    const supportsOutputPath = !useXcodebuild || await core.group('Determining docc setup', async () => {
-        const output = await runCmd('xcrun', ['docc', 'convert', '--help']);
-        return output.includes('--output-path');
-    });
     await core.group('Generating documentation', async () => {
         const options = {
             disableIndexing: disableIndexing,
@@ -134,7 +126,7 @@ async function main() {
             outputPath: mapNonNull(nonEmpty(outputDir), path_1.default.resolve),
         };
         if (useXcodebuild) {
-            await generateDocsUsingXcode(packagePath, options, supportsOutputPath, xcodebuildScheme, xcodebuildDestination);
+            await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
         }
         else {
             await generateDocsUsingSPM(packagePath, targets, options);
