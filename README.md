@@ -4,7 +4,9 @@
 
 This action generates documentation for a Swift package using `docc`.
 
-**Important:** The package must use the [Swift-DocC Plugin](https://github.com/apple/swift-docc-plugin).
+**Important:** The package must use the [Swift-DocC Plugin](https://github.com/apple/swift-docc-plugin) unless `xcodebuild` is used!
+
+**Note:** Version 2 of this action replaced `jazzy` with `docc`! Use `@v1` to use `jazzy`. 
 
 ## Inputs
 
