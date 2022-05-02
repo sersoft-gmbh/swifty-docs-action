@@ -13,6 +13,14 @@ This action generates documentation for a Swift package using `docc`.
 The path to the package.<br/>
 Required. Defaults to `${{github.workspace}}`.
 
+### `package-version`
+
+The version to use for this package.
+
+### `enable-inherited-docs`
+
+Whether to enable inherited docs. Defaults to `false`.
+
 ### `disable-indexing`
 
 Disables indexing for `docc`. Defaults to `false`.
@@ -49,7 +57,7 @@ _Note:_ This parameter is only evaluated when running on macOS.
 
 ### `output`
 
-The path to the output folder.
+The path to the output directory.
 
 ## Example Usage
 

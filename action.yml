@@ -6,8 +6,15 @@ inputs:
     description: The path to the package.
     required: true
     default: ${{github.workspace}}
+  package-version:
+    description: The version to use for this package.
+    required: false
+  enable-inherited-docs:
+    description: Whether to enable inherited docs.
+    required: true
+    default: 'false'
   disable-indexing:
-    description: Disables indexing for docc.
+    description: Disables indexing.
     required: true
     default: 'false'
   transform-for-static-hosting:
