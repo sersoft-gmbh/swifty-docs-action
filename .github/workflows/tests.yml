@@ -41,6 +41,7 @@ jobs:
         os: [ macos-latest, ubuntu-latest ]
     env:
       INPUT_PACKAGE_PATH: __test__/TestProject
+      INPUT_PACKAGE_VERSION: 1.0.0
       INPUT_OUTPUT: docs
     runs-on: ${{matrix.os}}
     steps:
@@ -58,11 +59,13 @@ jobs:
         if: github.event_name == 'push'
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
+          package-version : ${{env.INPUT_PACKAGE_VERSION}}
           output: ${{env.INPUT_OUTPUT}}
       - uses: './'
         if: github.event_name == 'pull_request'
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
+          package-version : ${{env.INPUT_PACKAGE_VERSION}}
           output: ${{env.INPUT_OUTPUT}}
       - name: Check for SPM build
         run: test -d '__test__/TestProject/.build'
@@ -77,6 +80,7 @@ jobs:
     name: Test using Xcode
     env:
       INPUT_PACKAGE_PATH: __test__/TestProject
+      INPUT_PACKAGE_VERSION: 1.0.0
       INPUT_USE_XCODEBUILD: true
       INPUT_XCODEBUILD_SCHEME: TestProject-Package
       INPUT_XCODEBUILD_DESTINATION: 'platform=macOS'
@@ -98,6 +102,7 @@ jobs:
         if: github.event_name == 'push'
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
+          package-version : ${{env.INPUT_PACKAGE_VERSION}}
           use-xcodebuild: ${{env.INPUT_USE_XCODEBUILD}}
           xcodebuild-scheme: ${{env.INPUT_XCODEBUILD_SCHEME}}
           xcodebuild-destination: ${{env.INPUT_XCODEBUILD_DESTINATION}}
@@ -106,6 +111,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
+          package-version : ${{env.INPUT_PACKAGE_VERSION}}
           use-xcodebuild: ${{env.INPUT_USE_XCODEBUILD}}
           xcodebuild-scheme: ${{env.INPUT_XCODEBUILD_SCHEME}}
           xcodebuild-destination: ${{env.INPUT_XCODEBUILD_DESTINATION}}
