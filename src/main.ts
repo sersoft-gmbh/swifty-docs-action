@@ -35,6 +35,7 @@ function mapNonNull<T, U>(t: T | null, fn: (t: T) => U): U | null {
 function docCFlags(options: IDocCOptions, useSPMPlugin: boolean): string[] {
     let args: string[] = [];
     if (!options.enableIndexBuilding && useSPMPlugin) args.push('--disable-indexing');
+    else if (options.enableIndexBuilding && !useSPMPlugin) args.push('--index');
     if (options.transformForStaticHosting) args.push('--transform-for-static-hosting');
     if (options.enableInheritedDocs) args.push('--enable-inherited-docs');
     if (options.bundleVersion) args.push('--bundle-version', options.bundleVersion);
