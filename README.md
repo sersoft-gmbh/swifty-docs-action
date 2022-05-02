@@ -1,53 +1,60 @@
-# SwiftPM Jazzy Docs
+# Swift Package Documentation Generator
 
 [![Tests](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/swifty-docs-action/actions/workflows/tests.yml)
 
-This action generates and combines jazzy docs for all products of a Swift package.
+This action generates documentation for a Swift package using `docc`.
+
+**Important:** The package must use the [Swift-DocC Plugin](https://github.com/apple/swift-docc-plugin).
 
 ## Inputs
 
-### `source`
+### `package-path`
 
-The path to the Swift package.<br/>
-Default: `${{github.workspace}}`.
+The path to the package.<br/>
+Required. Defaults to `${{github.workspace}}`.
 
-### `module-version`
+### `targets`
 
-The version to use when generating the docs.
+A list of targets separated by newline. If not given, all targets are built.
+
+### `disable-indexing`
+
+Disables indexing for `docc`. Defaults to `false`.
+
+### `transform-for-static-hosting`
+
+Enables the static hosting transformation. Defaults to `false`.
+
+### `hosting-base-path`
+
+The hosting base path to use.
+
+### `use-xcodebuild`
+
+Tells the action to use `xcodebuild` (instead of `swift package`).
+Use `xcodebuild-scheme` and `xcodebuild-destination` to further customize the `xcodebuild` invocation.<br/>
+Defaults to `false`.<br/>
+_Note:_ This parameter is only evaluated when running on macOS.
+
+### `xcodebuild-scheme`
+
+The scheme to use for the `xcodebuild` invocation. Only used if `use-xcodebuild` is `true`.<br/>
+_Note:_ This parameter is only evaluated when running on macOS.
+
+### `xcodebuild-destination`
+
+The destination to use for the `xcodebuild` invocation. Only used if `use-xcodebuild` is `true`.<br/>
+_Note:_ This parameter is only evaluated when running on macOS.
 
 ### `output`
 
 The path to the output folder.
 
-### `clean`
-
-Whether a previous output should be removed before generating docs.<br/>
-Default: `false`
-
-### `xcodebuild-destination`
-
-Tells the action to use `xcodebuild` (instead of `swift build`) and passes the value as `-destination` to `xcodebuild`.
-This parameter can be useful if a package is e.g. iOS only.
-Note that currently, swifty-docs-action creates docs for the unique set of targets of all the defined products in the SwiftPM package.
-Thus, there are a set of requirements that go along with the `xcodebuild-destination` parameter:
-
-- All targets that are referenced by a product *must* have a corresponding scheme. This can either happen by Xcode's automatic scheme generation, or manually (in which case the `.swiftpm` must be commited to the repository).
-- The `xcodebuild-destination` is applied as `-destination` to **all** builds. Selectively controlling this might come in a future update. 
-
-Note that this parameter is only respected when run on macOS.
-
 ## Example Usage
 
-Use the following snippet in a Swift package repository to generate jazzy docs for all products of your Swift package:
+Use the following snippet in a Swift package repository to generate documentation for all products of your Swift package:
 ```yaml
-uses: sersoft-gmbh/swifty-docs-action@v1
+uses: sersoft-gmbh/swifty-docs-action@v2
 with:
-  # Optional. Defaults to ${{github.workspace}}.
-  source: ${{github.workspace}}
-  # Optional. E.g. run this action on tags and use the tag name.
-  module-version: 1.2.3
-  # Optional.
   output: docs
-  # Optional. Defaults to true.
-  clean: true
 ```

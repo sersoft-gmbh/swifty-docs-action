@@ -1,23 +1,37 @@
-name: SwiftPM Jazzy Docs
-description: Generates and combines jazzy docs for all products of a Swift package.
+name: Swift Package Documentation Generator
+description: Generates documentation for a Swift package using docc.
 author: ser.soft GmbH
 inputs:
-  source:
-    description: The path to the Swift package.
+  package-path:
+    description: The path to the package.
     required: true
     default: ${{github.workspace}}
-  module-version:
-    description: The version to use when generating the docs.
+  targets:
+    description: A list of targets separated by newline. If not given, all targets are built.
+    required: false
+  disable-indexing:
+    description: Disables indexing for docc.
+    required: true
+    default: 'false'
+  transform-for-static-hosting:
+    description: Enables the static hosting transformation.
+    required: true
+    default: 'false'
+  hosting-base-path:
+    description: The hosting base path to use.
+    required: false
+  use-xcodebuild:
+    description: Tells the action to use xcodebuild (instead of `swift package`). Use `xcodebuild-scheme` and `xcodebuild-destination` to further customize the xcodebuild invocation.
+    required: true
+    default: 'false'
+  xcodebuild-scheme:
+    description: The scheme to use for the xcodebuild invocation. Only used if `use-xcodebuild` is true.
+    required: false
+  xcodebuild-destination:
+    description: The destination to use for the xcodebuild invocation. Only used if `use-xcodebuild` is true.
     required: false
   output:
     description: The path to the output folder.
-    required: false
-  clean:
-    description: Whether a previous output should be removed before generating docs.
-    required: true
-    default: 'true'
-  xcodebuild-destination:
-    description: Tells the action to use xcodebuild (instead of `swift build`) and passes the value as `-destination` to `xcodebuild`.
     required: false
 runs:
   using: node16
