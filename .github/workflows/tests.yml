@@ -22,13 +22,13 @@ jobs:
         run: npm run deploy
       - name: Configure repository
         run: |
-          git config user.name "${{secrets.BOT_USERNAME}}"
-          git config user.email "${{secrets.BOT_USERNAME}}@users.noreply.github.com"
+          git config user.name '${{secrets.BOT_USERNAME}}'
+          git config user.email '${{secrets.BOT_USERNAME}}@users.noreply.github.com'
       - name: Commit changes
         run: |
           if ! git diff --exit-code --quiet; then
             git add .
-            git commit -m "[AUTO] Update generated code"
+            git commit -m '[AUTO] Update generated code'
             git push
           fi
 
@@ -72,19 +72,20 @@ jobs:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
           output: ${{env.INPUT_OUTPUT}}
       - name: Check for SPM build
-        run: test -d __test__/TestProject/.build
+        run: test -d '__test__/TestProject/.build'
       - name: Check output path
-        run: test -d "${{env.INPUT_OUTPUT}}"
+        run: test -d '${{env.INPUT_OUTPUT}}'
       - name: Check index.html exists
-        run: test -f "${{env.INPUT_OUTPUT}}/index.html"
+        run: test -f '${{env.INPUT_OUTPUT}}/index.html'
 
   test-xcode:
     needs: deploy-action-code
     if: always() && !failure() && !cancelled()
     name: Test using Xcode
     env:
-      INPUT_USE_XCODEBUILD: true
       INPUT_PACKAGE_PATH: __test__/TestProject
+      INPUT_USE_XCODEBUILD: true
+      INPUT_XCODEBUILD_SCHEME: TestProject-Package
       INPUT_XCODEBUILD_DESTINATION: 'platform=macOS'
       INPUT_OUTPUT: docs
     runs-on: macos-latest
@@ -105,6 +106,7 @@ jobs:
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
           use-xcodebuild: ${{env.INPUT_USE_XCODEBUILD}}
+          xcodebuild-scheme: ${{env.INPUT_XCODEBUILD_SCHEME}}
           xcodebuild-destination: ${{env.INPUT_XCODEBUILD_DESTINATION}}
           output: ${{env.INPUT_OUTPUT}}
       - uses: './'
@@ -112,11 +114,12 @@ jobs:
         with:
           package-path: ${{env.INPUT_PACKAGE_PATH}}
           use-xcodebuild: ${{env.INPUT_USE_XCODEBUILD}}
+          xcodebuild-scheme: ${{env.INPUT_XCODEBUILD_SCHEME}}
           xcodebuild-destination: ${{env.INPUT_XCODEBUILD_DESTINATION}}
           output: ${{env.INPUT_OUTPUT}}
       - name: Check for Xcode SPM build
-        run: test -d __test__/TestProject/.swiftpm
+        run: test -d '__test__/TestProject/.swiftpm'
       - name: Check output path
-        run: test -d "${{env.INPUT_OUTPUT}}"
+        run: test -d '${{env.INPUT_OUTPUT}}'
       - name: Check index.html exists
-        run: test -f "${{env.INPUT_OUTPUT}}/index.html"
+        run: test -f '${{env.INPUT_OUTPUT}}/index.html'

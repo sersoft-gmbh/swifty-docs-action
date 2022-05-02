@@ -6,9 +6,6 @@ inputs:
     description: The path to the package.
     required: true
     default: ${{github.workspace}}
-  targets:
-    description: A list of targets separated by newline. If not given, all targets are built.
-    required: false
   disable-indexing:
     description: Disables indexing for docc.
     required: true
@@ -20,15 +17,18 @@ inputs:
   hosting-base-path:
     description: The hosting base path to use.
     required: false
+  targets:
+    description: A list of targets separated by newline. If not given, all targets are built. Ignored if `use-xcodebuild` is `true`.
+    required: false
   use-xcodebuild:
     description: Tells the action to use xcodebuild (instead of `swift package`). Use `xcodebuild-scheme` and `xcodebuild-destination` to further customize the xcodebuild invocation.
     required: true
     default: 'false'
   xcodebuild-scheme:
-    description: The scheme to use for the xcodebuild invocation. Only used if `use-xcodebuild` is true.
+    description: The scheme to use for the xcodebuild invocation. Required if `use-xcodebuild` is true.
     required: false
   xcodebuild-destination:
-    description: The destination to use for the xcodebuild invocation. Only used if `use-xcodebuild` is true.
+    description: The destination to use for the xcodebuild invocation. Required if `use-xcodebuild` is true.
     required: false
   output:
     description: The path to the output folder.

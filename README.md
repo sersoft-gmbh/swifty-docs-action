@@ -13,10 +13,6 @@ This action generates documentation for a Swift package using `docc`.
 The path to the package.<br/>
 Required. Defaults to `${{github.workspace}}`.
 
-### `targets`
-
-A list of targets separated by newline. If not given, all targets are built.
-
 ### `disable-indexing`
 
 Disables indexing for `docc`. Defaults to `false`.
@@ -28,6 +24,11 @@ Enables the static hosting transformation. Defaults to `false`.
 ### `hosting-base-path`
 
 The hosting base path to use.
+
+### `targets`
+
+A list of targets separated by newline. If not given, all targets are built.<br/>
+This is ignored if `use-xcodebuild` is `true`!
 
 ### `use-xcodebuild`
 

@@ -1,8 +1,11 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 
+interface ILengthProviding {
+    length: number;
+}
+
 interface IDocCOptions {
-    targets: string[];
     disableIndexing: boolean;
     transformForStaticHosting: boolean;
     hostingBasePath: string | null;
@@ -17,11 +20,12 @@ async function runCmd(cmd: string, args?: string[], cwd?: string): Promise<strin
     return output.stdout;
 }
 
+function nonEmpty<T extends ILengthProviding>(t: T): T | null {
+    return t.length > 0 ? t : null;
+}
+
 function docCFlags(options: IDocCOptions): string[] {
     let args = [];
-    if (options.targets.length > 0) {
-        args.push(...options.targets.flatMap(t => ['--target', t]));
-    }
     if (options.disableIndexing) args.push('--disable-indexing');
     if (options.transformForStaticHosting) args.push('--transform-for-static-hosting');
     if (options.hostingBasePath) args.push('--hosting-base-path', options.hostingBasePath);
@@ -29,10 +33,13 @@ function docCFlags(options: IDocCOptions): string[] {
     return args;
 }
 
-async function generateDocsUsingSPM(packagePath: string, options: IDocCOptions): Promise<string> {
+async function generateDocsUsingSPM(packagePath: string, targets: string[], options: IDocCOptions): Promise<string> {
     let args = ['package'];
     if (options.outputPath) args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
+    if (targets.length > 0) {
+        args.push(...targets.flatMap(t => ['--target', t]));
+    }
     args.push(...docCFlags(options));
     return await runCmd('swift', args, packagePath);
 }
@@ -61,18 +68,20 @@ async function main() {
 
     core.startGroup('Validating input');
     const packagePath = core.getInput('package-path', { required: true });
-    const targets = core.getMultilineInput('targets');
     const disableIndexing = core.getBooleanInput('disable-indexing', { required: true });
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
+    let targets: string[];
     let xcodebuildScheme: string | null;
     let xcodebuildDestination: string | null;
     if (useXcodebuild) {
-        xcodebuildScheme = core.getInput('xcodebuild-scheme');
-        xcodebuildDestination = core.getInput('xcodebuild-destination');
+        targets = [];
+        xcodebuildScheme = core.getInput('xcodebuild-scheme', { required: true });
+        xcodebuildDestination = core.getInput('xcodebuild-destination', { required: true });
     } else {
+        targets = core.getMultilineInput('targets');
         xcodebuildScheme = null;
         xcodebuildDestination = null;
     }
@@ -80,16 +89,15 @@ async function main() {
 
     await core.group('Generating documentation', async () => {
         const options: IDocCOptions = {
-            targets: targets,
             disableIndexing: disableIndexing,
             transformForStaticHosting: transformForStaticHosting,
-            hostingBasePath: hostingBasePath.length > 0 ? hostingBasePath : null,
-            outputPath: outputDir.length > 0 ? outputDir : null,
+            hostingBasePath: nonEmpty(hostingBasePath),
+            outputPath: nonEmpty(outputDir),
         };
         if (useXcodebuild) {
             await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
         } else {
-            await generateDocsUsingSPM(packagePath, options);
+            await generateDocsUsingSPM(packagePath, targets, options);
         }
     });
 }
