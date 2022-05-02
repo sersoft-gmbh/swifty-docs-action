@@ -39,11 +39,11 @@ async function runCmd(cmd, args, cwd) {
     });
     return output.stdout;
 }
+function nonEmpty(t) {
+    return t.length > 0 ? t : null;
+}
 function docCFlags(options) {
     let args = [];
-    if (options.targets.length > 0) {
-        args.push(...options.targets.flatMap(t => ['--target', t]));
-    }
     if (options.disableIndexing)
         args.push('--disable-indexing');
     if (options.transformForStaticHosting)
@@ -54,11 +54,14 @@ function docCFlags(options) {
         args.push('--output-path', options.outputPath);
     return args;
 }
-async function generateDocsUsingSPM(packagePath, options) {
+async function generateDocsUsingSPM(packagePath, targets, options) {
     let args = ['package'];
     if (options.outputPath)
         args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
+    if (targets.length > 0) {
+        args.push(...targets.flatMap(t => ['--target', t]));
+    }
     args.push(...docCFlags(options));
     return await runCmd('swift', args, packagePath);
 }
@@ -81,36 +84,37 @@ async function main() {
     }
     core.startGroup('Validating input');
     const packagePath = core.getInput('package-path', { required: true });
-    const targets = core.getMultilineInput('targets');
     const disableIndexing = core.getBooleanInput('disable-indexing', { required: true });
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
+    let targets;
     let xcodebuildScheme;
     let xcodebuildDestination;
     if (useXcodebuild) {
-        xcodebuildScheme = core.getInput('xcodebuild-scheme');
-        xcodebuildDestination = core.getInput('xcodebuild-destination');
+        targets = [];
+        xcodebuildScheme = core.getInput('xcodebuild-scheme', { required: true });
+        xcodebuildDestination = core.getInput('xcodebuild-destination', { required: true });
     }
     else {
+        targets = core.getMultilineInput('targets');
         xcodebuildScheme = null;
         xcodebuildDestination = null;
     }
     core.endGroup();
     await core.group('Generating documentation', async () => {
         const options = {
-            targets: targets,
             disableIndexing: disableIndexing,
             transformForStaticHosting: transformForStaticHosting,
-            hostingBasePath: hostingBasePath.length > 0 ? hostingBasePath : null,
-            outputPath: outputDir.length > 0 ? outputDir : null,
+            hostingBasePath: nonEmpty(hostingBasePath),
+            outputPath: nonEmpty(outputDir),
         };
         if (useXcodebuild) {
             await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
         }
         else {
-            await generateDocsUsingSPM(packagePath, options);
+            await generateDocsUsingSPM(packagePath, targets, options);
         }
     });
 }
