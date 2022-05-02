@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import path from "path";
 
 interface ILengthProviding {
     length: number;
@@ -88,11 +89,12 @@ async function main() {
     core.endGroup();
 
     await core.group('Generating documentation', async () => {
+        const nonEmptyOutputDir = nonEmpty(outputDir);
         const options: IDocCOptions = {
             disableIndexing: disableIndexing,
             transformForStaticHosting: transformForStaticHosting,
             hostingBasePath: nonEmpty(hostingBasePath),
-            outputPath: nonEmpty(outputDir),
+            outputPath: nonEmptyOutputDir ? path.resolve(nonEmptyOutputDir) : null,
         };
         if (useXcodebuild) {
             await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
