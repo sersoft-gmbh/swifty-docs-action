@@ -63,6 +63,7 @@ function docCFlags(options, useSPMPlugin) {
         args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath)
         args.push('--output-path', options.outputPath);
+    args.push(...options.otherArgs);
     return args;
 }
 async function generateDocsUsingSPM(packagePath, targets, options) {
@@ -100,6 +101,7 @@ async function main() {
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
+    const otherDoccArgs = core.getMultilineInput('other-docc-arguments');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
     let targets;
     let xcodebuildScheme;
@@ -123,6 +125,7 @@ async function main() {
             bundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path_1.default.resolve),
+            otherArgs: otherDoccArgs,
         };
         if (useXcodebuild) {
             await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
