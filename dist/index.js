@@ -32,8 +32,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(24));
 const exec = __importStar(__nccwpck_require__(423));
-async function runCmd(cmd, args) {
+async function runCmd(cmd, args, cwd) {
     const output = await exec.getExecOutput(cmd, args, {
+        cwd: cwd,
         silent: !core.isDebug(),
     });
     return output.stdout;
@@ -53,15 +54,15 @@ function docCFlags(options) {
         args.push('--output-path', options.outputPath);
     return args;
 }
-async function generateDocsUsingSPM(options) {
+async function generateDocsUsingSPM(packagePath, options) {
     let args = ['package'];
     if (options.outputPath)
         args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
     args.push(...docCFlags(options));
-    return await runCmd('swift', args);
+    return await runCmd('swift', args, packagePath);
 }
-async function generateDocsUsingXcode(options, scheme, destination) {
+async function generateDocsUsingXcode(packagePath, options, scheme, destination) {
     let args = ['docbuild'];
     if (scheme)
         args.push('-scheme', scheme);
@@ -70,7 +71,7 @@ async function generateDocsUsingXcode(options, scheme, destination) {
     // TODO: Do we need to do this?
     // const safeFlags = docCFlags(options).map(t => t.includes(' ') ? `'${t}'` : t).join(' ');
     args.push(`OTHER_DOCC_FLAGS="${docCFlags(options).join(' ')}"`);
-    return await runCmd('xcodebuild', args);
+    return await runCmd('xcodebuild', args, packagePath);
 }
 async function main() {
     switch (process.platform) {
@@ -79,9 +80,10 @@ async function main() {
         default: throw new Error('This action currently only supports macOS and Linux!');
     }
     core.startGroup('Validating input');
+    const packagePath = core.getInput('package-path', { required: true });
     const targets = core.getMultilineInput('targets');
-    const disableIndexing = core.getBooleanInput('disable-indexing');
-    const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting');
+    const disableIndexing = core.getBooleanInput('disable-indexing', { required: true });
+    const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
@@ -105,10 +107,10 @@ async function main() {
             outputPath: outputDir.length > 0 ? outputDir : null,
         };
         if (useXcodebuild) {
-            await generateDocsUsingXcode(options, xcodebuildScheme, xcodebuildDestination);
+            await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination);
         }
         else {
-            await generateDocsUsingSPM(options);
+            await generateDocsUsingSPM(packagePath, options);
         }
     });
 }
