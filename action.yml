@@ -13,8 +13,8 @@ inputs:
     description: Whether to enable inherited docs.
     required: true
     default: 'false'
-  disable-indexing:
-    description: Disables indexing.
+  enable-index-building:
+    description: Enables index building.
     required: true
     default: 'false'
   transform-for-static-hosting:

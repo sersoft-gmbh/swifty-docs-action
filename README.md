@@ -23,9 +23,9 @@ The version to use for this package.
 
 Whether to enable inherited docs. Defaults to `false`.
 
-### `disable-indexing`
+### `enable-index-buildiung`
 
-Disables indexing for `docc`. Defaults to `false`.
+Enable index building. Defaults to `false`.
 
 ### `transform-for-static-hosting`
 
