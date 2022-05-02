@@ -35,6 +35,10 @@ Enables the static hosting transformation. Defaults to `false`.
 
 The hosting base path to use.
 
+### `other-docc-arguments`
+
+Further (newline-separated) `docc` arguments.
+
 ### `targets`
 
 A list of targets separated by newline. If not given, all targets are built.<br/>

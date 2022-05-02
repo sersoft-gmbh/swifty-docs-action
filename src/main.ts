@@ -13,6 +13,7 @@ interface IDocCOptions {
     bundleVersion: string | null;
     hostingBasePath: string | null;
     outputPath: string | null;
+    otherArgs: string[];
 }
 
 async function runCmd(cmd: string, args?: string[], cwd?: string): Promise<string> {
@@ -32,13 +33,14 @@ function mapNonNull<T, U>(t: T | null, fn: (t: T) => U): U | null {
 }
 
 function docCFlags(options: IDocCOptions, useSPMPlugin: boolean): string[] {
-    let args = [];
+    let args: string[] = [];
     if (!options.enableIndexBuilding && useSPMPlugin) args.push('--disable-indexing');
     if (options.transformForStaticHosting) args.push('--transform-for-static-hosting');
     if (options.enableInheritedDocs) args.push('--enable-inherited-docs');
     if (options.bundleVersion) args.push('--bundle-version', options.bundleVersion);
     if (options.hostingBasePath) args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath) args.push('--output-path', options.outputPath);
+    args.push(...options.otherArgs);
     return args;
 }
 
@@ -82,6 +84,7 @@ async function main() {
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
+    const otherDoccArgs = core.getMultilineInput('other-docc-arguments');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
     let targets: string[];
     let xcodebuildScheme: string | null;
@@ -105,6 +108,7 @@ async function main() {
             bundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path.resolve),
+            otherArgs: otherDoccArgs,
         };
         if (useXcodebuild) {
             await generateDocsUsingXcode(

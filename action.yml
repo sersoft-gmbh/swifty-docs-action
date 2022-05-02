@@ -24,6 +24,9 @@ inputs:
   hosting-base-path:
     description: The hosting base path to use.
     required: false
+  other-docc-arguments:
+    description: Further (newline-separated) docc arguments.
+    required: false
   targets:
     description: A list of targets separated by newline. If not given, all targets are built. Ignored if `use-xcodebuild` is `true`.
     required: false

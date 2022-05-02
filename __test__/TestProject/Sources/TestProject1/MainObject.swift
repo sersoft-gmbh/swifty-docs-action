@@ -1,8 +1,13 @@
 /// This is an examplatory enumeration.
 public enum SomeEnum: Equatable {
-    case a, b, c
+    /// This is case A.
+    case a
+    /// This is case B.
+    case b
+    /// This is case C.
+    case c
 
-    /// Returns whether self is equal to `.b`.
+    /// Returns whether self is equal to ``b``.
     public var isB: Bool { self == .b }
 }
 
