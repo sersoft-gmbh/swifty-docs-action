@@ -56,20 +56,15 @@ async function generateDocsUsingSPM(packagePath: string, targets: string[], opti
 async function generateDocsUsingXcode(
     packagePath: string,
     options: IDocCOptions,
-    doccSupportsOutputPath: boolean,
     scheme: string | null,
     destination: string | null
 ): Promise<string> {
     let args = ['docbuild'];
     if (scheme) args.push('-scheme', scheme);
     if (destination) args.push('-destination', destination);
-    if (!doccSupportsOutputPath && options.outputPath) {
-        args.push(`DOCC_OUTPUT_DIR="${options.outputPath}"`)
-        options.outputPath = null;
-    }
     // TODO: Do we need to do this?
     // const safeFlags = docCFlags(options).map(t => t.includes(' ') ? `'${t}'` : t).join(' ');
-    args.push(`OTHER_DOCC_FLAGS="${docCFlags(options).join(' ')}"`);
+    args.push(`OTHER_DOCC_FLAGS=${docCFlags(options).join(' ')}`);
     return await runCmd('xcodebuild', args, packagePath);
 }
 
@@ -103,11 +98,6 @@ async function main() {
     }
     core.endGroup();
 
-    const supportsOutputPath = !useXcodebuild || await core.group('Determining docc setup', async () => {
-        const output = await runCmd('xcrun', ['docc', 'convert', '--help']);
-        return output.includes('--output-path');
-    })
-
     await core.group('Generating documentation', async () => {
         const options: IDocCOptions = {
             disableIndexing: disableIndexing,
@@ -121,7 +111,6 @@ async function main() {
             await generateDocsUsingXcode(
                 packagePath,
                 options,
-                supportsOutputPath,
                 xcodebuildScheme,
                 xcodebuildDestination
             );
