@@ -61,6 +61,10 @@ _Note:_ This parameter is only evaluated when running on macOS.
 The destination to use for the `xcodebuild` invocation. Only used if `use-xcodebuild` is `true`.<br/>
 _Note:_ This parameter is only evaluated when running on macOS.
 
+### `other-xcodebuild-arguments`
+
+Further (newline-separated) `xcodebuild` arguments.
+
 ### `output`
 
 The path to the output directory.

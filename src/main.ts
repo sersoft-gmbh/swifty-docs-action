@@ -59,13 +59,15 @@ async function generateDocsUsingXcode(
     packagePath: string,
     options: IDocCOptions,
     scheme: string | null,
-    destination: string | null
+    destination: string | null,
+    otherArgs: string[]
 ): Promise<string> {
     let args = ['docbuild'];
     if (scheme) args.push('-scheme', scheme);
     if (destination) args.push('-destination', destination);
     const safeFlags = docCFlags(options, false).map(t => t.includes(' ') ? `"${t}"` : t).join(' ');
     args.push(`OTHER_DOCC_FLAGS=${safeFlags}`);
+    args.push(...otherArgs);
     return await runCmd('xcodebuild', args, packagePath);
 }
 
@@ -89,14 +91,17 @@ async function main() {
     let targets: string[];
     let xcodebuildScheme: string | null;
     let xcodebuildDestination: string | null;
+    let otherXcodebuildArgs: string[];
     if (useXcodebuild) {
         targets = [];
         xcodebuildScheme = core.getInput('xcodebuild-scheme', { required: true });
         xcodebuildDestination = core.getInput('xcodebuild-destination', { required: true });
+        otherXcodebuildArgs = core.getMultilineInput('other-xcodebuild-arguments');
     } else {
         targets = core.getMultilineInput('targets');
         xcodebuildScheme = null;
         xcodebuildDestination = null;
+        otherXcodebuildArgs = [];
     }
     core.endGroup();
 
@@ -115,7 +120,8 @@ async function main() {
                 packagePath,
                 options,
                 xcodebuildScheme,
-                xcodebuildDestination
+                xcodebuildDestination,
+                otherXcodebuildArgs
             );
         } else {
             await generateDocsUsingSPM(packagePath, targets, options);

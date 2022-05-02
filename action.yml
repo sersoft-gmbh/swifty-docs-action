@@ -40,6 +40,9 @@ inputs:
   xcodebuild-destination:
     description: The destination to use for the xcodebuild invocation. Required if `use-xcodebuild` is true.
     required: false
+  other-xcodebuild-arguments:
+    description: Further (newline-separated) xcodebuild arguments.
+    required: false
   output:
     description: The path to the output folder.
     required: false
