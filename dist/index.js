@@ -49,9 +49,9 @@ function nonEmpty(t) {
 function mapNonNull(t, fn) {
     return t ? fn(t) : null;
 }
-function docCFlags(options) {
+function docCFlags(options, useSPMPlugin) {
     let args = [];
-    if (options.disableIndexing)
+    if (!options.enableIndexBuilding && useSPMPlugin)
         args.push('--disable-indexing');
     if (options.transformForStaticHosting)
         args.push('--transform-for-static-hosting');
@@ -73,7 +73,7 @@ async function generateDocsUsingSPM(packagePath, targets, options) {
     if (targets.length > 0) {
         args.push(...targets.flatMap(t => ['--target', t]));
     }
-    args.push(...docCFlags(options));
+    args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }
 async function generateDocsUsingXcode(packagePath, options, scheme, destination) {
@@ -82,9 +82,8 @@ async function generateDocsUsingXcode(packagePath, options, scheme, destination)
         args.push('-scheme', scheme);
     if (destination)
         args.push('-destination', destination);
-    // TODO: Do we need to do this?
-    // const safeFlags = docCFlags(options).map(t => t.includes(' ') ? `'${t}'` : t).join(' ');
-    args.push(`OTHER_DOCC_FLAGS=${docCFlags(options).join(' ')}`);
+    const safeFlags = docCFlags(options, false).map(t => t.includes(' ') ? `"${t}"` : t).join(' ');
+    args.push(`OTHER_DOCC_FLAGS=${safeFlags}`);
     return await runCmd('xcodebuild', args, packagePath);
 }
 async function main() {
@@ -96,7 +95,7 @@ async function main() {
     core.startGroup('Validating input');
     const packagePath = core.getInput('package-path', { required: true });
     const packageVersion = core.getInput('package-version');
-    const disableIndexing = core.getBooleanInput('disable-indexing', { required: true });
+    const enableIndexBuilding = core.getBooleanInput('enable-index-building', { required: true });
     const enableInheritedDocs = core.getBooleanInput('enable-inherited-docs', { required: true });
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
@@ -118,7 +117,7 @@ async function main() {
     core.endGroup();
     await core.group('Generating documentation', async () => {
         const options = {
-            disableIndexing: disableIndexing,
+            enableIndexBuilding: enableIndexBuilding,
             transformForStaticHosting: transformForStaticHosting,
             enableInheritedDocs: enableInheritedDocs,
             bundleVersion: nonEmpty(packageVersion),
