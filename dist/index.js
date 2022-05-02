@@ -53,6 +53,8 @@ function docCFlags(options, useSPMPlugin) {
     let args = [];
     if (!options.enableIndexBuilding && useSPMPlugin)
         args.push('--disable-indexing');
+    else if (options.enableIndexBuilding && !useSPMPlugin)
+        args.push('--index');
     if (options.transformForStaticHosting)
         args.push('--transform-for-static-hosting');
     if (options.enableInheritedDocs)
