@@ -27,6 +27,6 @@
     "@actions/exec": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^16.11.38"
+    "@types/node": "^16.11.39"
   }
 }
