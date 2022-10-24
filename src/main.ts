@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
-import path from "path";
+import path from 'path';
 
 interface ILengthProviding {
     length: number;
