@@ -21,7 +21,7 @@ jobs:
       INPUT_OUTPUT: docs
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: swift-actions/setup-swift@v1.20.0
+      - uses: swift-actions/setup-swift@v1.21.0
         with:
           swift-version: '5'
       - name: Install dependencies
