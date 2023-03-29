@@ -29,8 +29,6 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-        with:
-          fix-permissions: true
       - uses: sersoft-gmbh/swifty-docs-action@master
         if: ${{ github.event_name == 'push' }}
         with:
@@ -69,8 +67,6 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-        with:
-          fix-permissions: true
       - uses: sersoft-gmbh/swifty-docs-action@master
         if: ${{ github.event_name == 'push' }}
         with:
