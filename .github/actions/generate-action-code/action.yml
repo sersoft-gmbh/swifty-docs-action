@@ -11,4 +11,7 @@ runs:
         cache: 'npm'
     - name: Generate action code
       shell: bash
-      run: npm run deploy
+      run: |
+        npm clean-install
+        npm run build
+        npm run pack
