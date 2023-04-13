@@ -22,7 +22,7 @@ jobs:
       INPUT_OUTPUT: docs
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: swift-actions/setup-swift@v1.22.0
+      - uses: swift-actions/setup-swift@v1.23.0
         with:
           swift-version: '5'
       - uses: actions/checkout@v3
