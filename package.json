@@ -27,7 +27,7 @@
     "@actions/exec": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^16.18.30",
+    "@types/node": "^16.18.31",
     "@vercel/ncc": "^0.36.1",
     "typescript": "^5.0.4"
   }
