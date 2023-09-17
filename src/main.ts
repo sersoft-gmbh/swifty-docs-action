@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
+import { getExecOutput } from '@actions/exec';
 import path from 'path';
 
 interface ILengthProviding {
@@ -17,7 +17,7 @@ interface IDocCOptions {
 }
 
 async function runCmd(cmd: string, args?: string[], cwd?: string): Promise<string> {
-    const output = await exec.getExecOutput(cmd, args, {
+    const output = await getExecOutput(cmd, args, {
         cwd: cwd,
         silent: !core.isDebug(),
     });
@@ -49,9 +49,7 @@ async function generateDocsUsingSPM(packagePath: string, targets: string[], opti
     let args = ['package'];
     if (options.outputPath) args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
-    if (targets.length > 0) {
-        args.push(...targets.flatMap(t => ['--target', t]));
-    }
+    if (targets.length > 0)  args.push(...targets.flatMap(t => ['--target', t]));
     args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }

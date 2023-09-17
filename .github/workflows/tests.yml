@@ -2,13 +2,13 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     paths: 
       - 'dist/*.js'
       - '.github/actions/generate-action-code/**'
       - '.github/workflows/tests.yml'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   test-spm:
@@ -29,7 +29,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-      - uses: sersoft-gmbh/swifty-docs-action@master
+      - uses: sersoft-gmbh/swifty-docs-action@main
         if: ${{ github.event_name == 'push' }}
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}
@@ -67,7 +67,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-      - uses: sersoft-gmbh/swifty-docs-action@master
+      - uses: sersoft-gmbh/swifty-docs-action@main
         if: ${{ github.event_name == 'push' }}
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}

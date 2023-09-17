@@ -34,10 +34,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const exec = __importStar(__nccwpck_require__(514));
+const exec_1 = __nccwpck_require__(514);
 const path_1 = __importDefault(__nccwpck_require__(17));
 async function runCmd(cmd, args, cwd) {
-    const output = await exec.getExecOutput(cmd, args, {
+    const output = await (0, exec_1.getExecOutput)(cmd, args, {
         cwd: cwd,
         silent: !core.isDebug(),
     });
@@ -73,9 +73,8 @@ async function generateDocsUsingSPM(packagePath, targets, options) {
     if (options.outputPath)
         args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
-    if (targets.length > 0) {
+    if (targets.length > 0)
         args.push(...targets.flatMap(t => ['--target', t]));
-    }
     args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }
