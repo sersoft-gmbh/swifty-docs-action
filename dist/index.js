@@ -137,7 +137,7 @@ async function main() {
             transformForStaticHosting: transformForStaticHosting,
             enableInheritedDocs: enableInheritedDocs,
             sourceRepository: checkoutPath || repoService || repoBaseUrl ? {
-                checkoutPath: nonEmpty(checkoutPath),
+                checkoutPath: mapNonNull(nonEmpty(checkoutPath), path_1.default.resolve),
                 service: repoService && repoBaseUrl ? {
                     type: repoService,
                     baseUrl: repoBaseUrl,
