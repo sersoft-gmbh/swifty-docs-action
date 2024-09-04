@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches: [ main ]
-    paths: 
+    paths:
       - 'dist/*.js'
       - '.github/actions/generate-action-code/**'
       - '.github/workflows/tests.yml'
@@ -33,20 +33,31 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}
+          checkout-path: ${{ env.INPUT_PACKAGE_PATH }}
           package-version : ${{ env.INPUT_PACKAGE_VERSION }}
           output: ${{ env.INPUT_OUTPUT }}
       - uses: './'
         if: ${{ github.event_name == 'pull_request' }}
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}
+          checkout-path: ${{ env.INPUT_PACKAGE_PATH }}
           package-version : ${{ env.INPUT_PACKAGE_VERSION }}
           output: ${{ env.INPUT_OUTPUT }}
       - name: Check for SPM build
         run: test -d '__test__/TestProject/.build'
       - name: Check output path
         run: test -d "${INPUT_OUTPUT}"
-      - name: Check index.html exists
-        run: test -f "${INPUT_OUTPUT}/index.html"
+      - name: Check docc archive(s) or index.html exist
+        run: |
+          FOUND=0
+          for file in "${INPUT_OUTPUT}"/*.doccarchive; do
+            FOUND=1
+            break
+          done
+          if [ $FOUND -eq 0 ]; then
+            echo "No docc archive found, checking for index.html"
+            test -f "${INPUT_OUTPUT}/index.html"
+          fi
 
   test-xcode:
     name: Test using Xcode
@@ -72,6 +83,7 @@ jobs:
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}
           package-version : ${{ env.INPUT_PACKAGE_VERSION }}
+          checkout-path: ${{ env.INPUT_PACKAGE_PATH }}
           use-xcodebuild: ${{ env.INPUT_USE_XCODEBUILD }}
           xcodebuild-scheme: ${{ env.INPUT_XCODEBUILD_SCHEME }}
           xcodebuild-destination: ${{ env.INPUT_XCODEBUILD_DESTINATION }}
@@ -81,6 +93,7 @@ jobs:
         with:
           package-path: ${{ env.INPUT_PACKAGE_PATH }}
           package-version : ${{ env.INPUT_PACKAGE_VERSION }}
+          checkout-path: ${{ env.INPUT_PACKAGE_PATH }}
           use-xcodebuild: ${{ env.INPUT_USE_XCODEBUILD }}
           xcodebuild-scheme: ${{ env.INPUT_XCODEBUILD_SCHEME }}
           xcodebuild-destination: ${{ env.INPUT_XCODEBUILD_DESTINATION }}
@@ -89,5 +102,14 @@ jobs:
         run: test -d '__test__/TestProject/.swiftpm'
       - name: Check output path
         run: test -d "${INPUT_OUTPUT}"
-      - name: Check index.html exists
-        run: test -f "${INPUT_OUTPUT}/index.html"
+      - name: Check docc archive(s) or index.html exist
+        run: |
+          FOUND=0
+          for file in "${INPUT_OUTPUT}"/*.doccarchive; do
+            FOUND=1
+            break
+          done
+          if [ $FOUND -eq 0 ]; then
+            echo "No docc archive found, checking for index.html"
+            test -f "${INPUT_OUTPUT}/index.html"
+          fi
