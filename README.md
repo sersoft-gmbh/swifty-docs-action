@@ -27,6 +27,18 @@ Whether to enable inherited docs. Defaults to `false`.
 
 Enable index building. Defaults to `false`.
 
+### `checkout-path`
+
+The path to check out the package to. Defaults to the workspace (`${{ github.workspace }}`).
+
+### `repository-service`
+
+The service to use for the repository. Must be supported by `docc` (see `xcrun docc convert --help`). Defaults to `github`.
+
+### `repository-base-url`
+
+The base URL of the repository. Defaults to the current repository (`${{ github.server_url }}/${{ github.repository }}`).
+
 ### `transform-for-static-hosting`
 
 Enables the static hosting transformation. Defaults to `false`.
@@ -64,6 +76,7 @@ _Note:_ This parameter is only evaluated when running on macOS.
 ### `other-xcodebuild-arguments`
 
 Further (newline-separated) `xcodebuild` arguments.
+_Note:_ This parameter is only evaluated when running on macOS.
 
 ### `output`
 

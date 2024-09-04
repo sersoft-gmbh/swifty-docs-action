@@ -8,7 +8,7 @@ runs:
       with:
         node-version: 20
         check-latest: true
-        cache: 'npm'
+        cache: npm
     - name: Generate action code
       shell: bash
       run: |

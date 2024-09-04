@@ -6,10 +6,21 @@ interface ILengthProviding {
     length: number;
 }
 
+interface IDocCSourceRepositoryService {
+    type: 'github' | 'gitlab' | 'bitbucket' | string;
+    baseUrl: string;
+}
+
+interface IDocCSourceRepositoryOptions {
+    checkoutPath: string | null;
+    service: IDocCSourceRepositoryService | null;
+}
+
 interface IDocCOptions {
     enableIndexBuilding: boolean;
     transformForStaticHosting: boolean;
     enableInheritedDocs: boolean;
+    sourceRepository: IDocCSourceRepositoryOptions | null;
     bundleVersion: string | null;
     hostingBasePath: string | null;
     outputPath: string | null;
@@ -38,6 +49,11 @@ function docCFlags(options: IDocCOptions, useSPMPlugin: boolean): string[] {
     else if (options.enableIndexBuilding && !useSPMPlugin) args.push('--index');
     if (options.transformForStaticHosting) args.push('--transform-for-static-hosting');
     if (options.enableInheritedDocs) args.push('--enable-inherited-docs');
+    if (options.sourceRepository?.checkoutPath) args.push('--checkout-path', options.sourceRepository.checkoutPath);
+    if (options.sourceRepository?.service) {
+        args.push('--source-service', options.sourceRepository.service.type);
+        args.push('--source-service-base-url', options.sourceRepository.service.baseUrl);
+    }
     if (options.bundleVersion) args.push('--bundle-version', options.bundleVersion);
     if (options.hostingBasePath) args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath) args.push('--output-path', options.outputPath);
@@ -45,11 +61,15 @@ function docCFlags(options: IDocCOptions, useSPMPlugin: boolean): string[] {
     return args;
 }
 
-async function generateDocsUsingSPM(packagePath: string, targets: string[], options: IDocCOptions): Promise<string> {
+async function generateDocsUsingSPM(
+    packagePath: string,
+    targets: string[],
+    options: IDocCOptions
+): Promise<string> {
     let args = ['package'];
     if (options.outputPath) args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
-    if (targets.length > 0)  args.push(...targets.flatMap(t => ['--target', t]));
+    if (targets.length > 0) args.push(...targets.flatMap(t => ['--target', t]));
     args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }
@@ -82,6 +102,9 @@ async function main() {
     const packageVersion = core.getInput('package-version');
     const enableIndexBuilding = core.getBooleanInput('enable-index-building', { required: true });
     const enableInheritedDocs = core.getBooleanInput('enable-inherited-docs', { required: true });
+    const checkoutPath = core.getInput('checkout-path');
+    const repoService = core.getInput('repository-service');
+    const repoBaseUrl = core.getInput('repository-base-url');
     const transformForStaticHosting = core.getBooleanInput('transform-for-static-hosting', { required: true });
     const hostingBasePath = core.getInput('hosting-base-path');
     const outputDir = core.getInput('output');
@@ -109,6 +132,13 @@ async function main() {
             enableIndexBuilding: enableIndexBuilding,
             transformForStaticHosting: transformForStaticHosting,
             enableInheritedDocs: enableInheritedDocs,
+            sourceRepository: checkoutPath || repoService || repoBaseUrl ? {
+                checkoutPath: nonEmpty(checkoutPath),
+                service: repoService && repoBaseUrl ? {
+                    type: repoService,
+                    baseUrl: repoBaseUrl,
+                } : null,
+            } : null,
             bundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path.resolve),

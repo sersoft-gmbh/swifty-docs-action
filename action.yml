@@ -5,7 +5,7 @@ inputs:
   package-path:
     description: The path to the package.
     required: true
-    default: ${{github.workspace}}
+    default: ${{ github.workspace }}
   package-version:
     description: The version to use for this package.
     required: false
@@ -17,6 +17,18 @@ inputs:
     description: Enables index building.
     required: true
     default: 'false'
+  checkout-path:
+    description: The path to check out the package to. Defaults to the workspace.
+    required: false
+    default: ${{ github.workspace }}
+  repository-service:
+    description: The service to use for the repository. Must be supported by docc. Defaults to GitHub.
+    required: false
+    default: 'github'
+  repository-base-url:
+    description: The base URL of the repository. Defaults to the current repository.
+    required: false
+    default: ${{ github.server_url }}/${{ github.repository }}
   transform-for-static-hosting:
     description: Enables the static hosting transformation.
     required: true
