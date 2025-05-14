@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'dist/*.js'
+      - '__test__/**'
       - '.github/actions/generate-action-code/**'
       - '.github/workflows/tests.yml'
   pull_request:
