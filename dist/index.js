@@ -54,10 +54,10 @@ async function runCmd(cmd, args, cwd) {
     return output.stdout;
 }
 function nonEmpty(t) {
-    return t.length > 0 ? t : null;
+    return t.length > 0 ? t : undefined;
 }
 function mapNonNull(t, fn) {
-    return t ? fn(t) : null;
+    return t ? fn(t) : undefined;
 }
 function docCFlags(options, useSPMPlugin) {
     let args = [];
@@ -65,6 +65,8 @@ function docCFlags(options, useSPMPlugin) {
         args.push('--disable-indexing');
     else if (options.enableIndexBuilding && !useSPMPlugin)
         args.push('--index');
+    if (options.platform)
+        args.push('--platform', options.platform);
     if (options.transformForStaticHosting)
         args.push('--transform-for-static-hosting');
     if (options.enableInheritedDocs)
@@ -84,13 +86,15 @@ function docCFlags(options, useSPMPlugin) {
     args.push(...options.otherArgs);
     return args;
 }
-async function generateDocsUsingSPM(packagePath, targets, options) {
+async function generateDocsUsingSPM(packagePath, targets, disableAutomaticCombination, options) {
     let args = ['package'];
     if (options.outputPath)
         args.push('--allow-writing-to-directory', options.outputPath);
     args.push('generate-documentation');
     if (targets.length > 0)
         args.push(...targets.flatMap(t => ['--target', t]));
+    if (targets.length != 1 && !disableAutomaticCombination)
+        args.push('--enable-experimental-combined-documentation');
     args.push(...docCFlags(options, true));
     return await runCmd('swift', args, packagePath);
 }
@@ -116,6 +120,7 @@ async function main() {
     const packageVersion = core.getInput('package-version');
     const enableIndexBuilding = core.getBooleanInput('enable-index-building', { required: true });
     const enableInheritedDocs = core.getBooleanInput('enable-inherited-docs', { required: true });
+    const platform = core.getInput('platform');
     const checkoutPath = core.getInput('checkout-path');
     const repoService = core.getInput('repository-service');
     const repoBaseUrl = core.getInput('repository-base-url');
@@ -125,19 +130,22 @@ async function main() {
     const otherDoccArgs = core.getMultilineInput('other-docc-arguments');
     const useXcodebuild = process.platform === 'darwin' && core.getBooleanInput('use-xcodebuild');
     let targets;
+    let disableAutomaticCombination;
     let xcodebuildScheme;
     let xcodebuildDestination;
     let otherXcodebuildArgs;
     if (useXcodebuild) {
         targets = [];
+        disableAutomaticCombination = false;
         xcodebuildScheme = core.getInput('xcodebuild-scheme', { required: true });
         xcodebuildDestination = core.getInput('xcodebuild-destination', { required: true });
         otherXcodebuildArgs = core.getMultilineInput('other-xcodebuild-arguments');
     }
     else {
         targets = core.getMultilineInput('targets');
-        xcodebuildScheme = null;
-        xcodebuildDestination = null;
+        disableAutomaticCombination = core.getBooleanInput('disable-automatic-documentation-combination');
+        xcodebuildScheme = undefined;
+        xcodebuildDestination = undefined;
         otherXcodebuildArgs = [];
     }
     core.endGroup();
@@ -146,13 +154,14 @@ async function main() {
             enableIndexBuilding: enableIndexBuilding,
             transformForStaticHosting: transformForStaticHosting,
             enableInheritedDocs: enableInheritedDocs,
+            platform: nonEmpty(platform),
             sourceRepository: checkoutPath || repoService || repoBaseUrl ? {
                 checkoutPath: mapNonNull(nonEmpty(checkoutPath), path_1.default.resolve),
                 service: repoService && repoBaseUrl ? {
                     type: repoService,
                     baseUrl: repoBaseUrl,
-                } : null,
-            } : null,
+                } : undefined,
+            } : undefined,
             bundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path_1.default.resolve),
@@ -162,7 +171,7 @@ async function main() {
             await generateDocsUsingXcode(packagePath, options, xcodebuildScheme, xcodebuildDestination, otherXcodebuildArgs);
         }
         else {
-            await generateDocsUsingSPM(packagePath, targets, options);
+            await generateDocsUsingSPM(packagePath, targets, disableAutomaticCombination, options);
         }
     });
 }
