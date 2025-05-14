@@ -17,8 +17,11 @@ inputs:
     description: Enables index building.
     required: true
     default: 'false'
+  platform:
+    description: Specify information about the current release of a platform. See docc `--platform`.
+    required: false
   checkout-path:
-    description: The path to check out the package to. Defaults to the workspace.
+    description: The root path of the repository's checkout. Defaults to the workspace.
     required: false
     default: ${{ github.workspace }}
   repository-service:
@@ -42,6 +45,10 @@ inputs:
   targets:
     description: A list of targets separated by newline. If not given, all targets are built. Ignored if `use-xcodebuild` is `true`.
     required: false
+  disable-automatic-documentation-combination:
+    description: If not set, this action will automatically use `enable-experimental-combined-documentation` if more than one target is passed. Ignored if `use-xcodebuild` is `true`.
+    required: true
+    default: 'false'
   use-xcodebuild:
     description: Tells the action to use xcodebuild (instead of `swift package`). Use `xcodebuild-scheme` and `xcodebuild-destination` to further customize the xcodebuild invocation.
     required: true

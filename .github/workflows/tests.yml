@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: swift-actions/setup-swift@v2.3.0
         with:
-          swift-version: '5'
+          swift-version: '6'
       - uses: actions/checkout@v4
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
