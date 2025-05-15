@@ -31,7 +31,7 @@ inputs:
   repository-base-url:
     description: The base URL of the repository. Defaults to the current repository.
     required: false
-    default: ${{ github.server_url }}/${{ github.repository }}
+    default: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref || github.sha }}
   transform-for-static-hosting:
     description: Enables the static hosting transformation.
     required: true
