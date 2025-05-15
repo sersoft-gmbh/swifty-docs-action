@@ -18,7 +18,7 @@ interface IDocCOptions {
     readonly transformForStaticHosting: boolean;
     readonly enableInheritedDocs: boolean;
     readonly sourceRepository?: IDocCSourceRepositoryOptions;
-    readonly bundleVersion?: string;
+    readonly fallbackBundleVersion?: string;
     readonly hostingBasePath?: string;
     readonly outputPath?: string;
     readonly otherArgs: readonly string[];
@@ -52,7 +52,7 @@ function docCFlags(options: IDocCOptions, useSPMPlugin: boolean): readonly strin
         args.push('--source-service', options.sourceRepository.service.type);
         args.push('--source-service-base-url', options.sourceRepository.service.baseUrl);
     }
-    if (options.bundleVersion) args.push('--bundle-version', options.bundleVersion);
+    if (options.fallbackBundleVersion) args.push('--fallback-bundle-version', options.fallbackBundleVersion);
     if (options.hostingBasePath) args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath) args.push('--output-path', options.outputPath);
     args.push(...options.otherArgs);
@@ -145,7 +145,7 @@ async function main() {
                     baseUrl: repoBaseUrl,
                 } : undefined,
             } : undefined,
-            bundleVersion: nonEmpty(packageVersion),
+            fallbackBundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path.resolve),
             otherArgs: otherDoccArgs,
