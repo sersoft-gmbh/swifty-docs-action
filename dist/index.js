@@ -77,8 +77,8 @@ function docCFlags(options, useSPMPlugin) {
         args.push('--source-service', options.sourceRepository.service.type);
         args.push('--source-service-base-url', options.sourceRepository.service.baseUrl);
     }
-    if (options.bundleVersion)
-        args.push('--bundle-version', options.bundleVersion);
+    if (options.fallbackBundleVersion)
+        args.push('--fallback-bundle-version', options.fallbackBundleVersion);
     if (options.hostingBasePath)
         args.push('--hosting-base-path', options.hostingBasePath);
     if (options.outputPath)
@@ -162,7 +162,7 @@ async function main() {
                     baseUrl: repoBaseUrl,
                 } : undefined,
             } : undefined,
-            bundleVersion: nonEmpty(packageVersion),
+            fallbackBundleVersion: nonEmpty(packageVersion),
             hostingBasePath: nonEmpty(hostingBasePath),
             outputPath: mapNonNull(nonEmpty(outputDir), path_1.default.resolve),
             otherArgs: otherDoccArgs,
