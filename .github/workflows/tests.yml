@@ -26,7 +26,7 @@ jobs:
       - uses: vapor/swiftly-action@v0.2
         with:
           toolchain: latest
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
@@ -75,7 +75,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: latest-stable
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
