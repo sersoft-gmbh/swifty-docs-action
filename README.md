@@ -16,7 +16,7 @@ See [action.yml](action.yml) for all inputs.
 
 Use the following snippet in a Swift package repository to generate documentation for all products of your Swift package:
 ```yaml
-uses: sersoft-gmbh/swifty-docs-action@v3
+uses: sersoft-gmbh/swifty-docs-action@v4
 with:
   output: docs
 ```

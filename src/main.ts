@@ -91,7 +91,7 @@ async function generateDocsUsingXcode(
     return await runCmd('xcodebuild', args, packagePath);
 }
 
-async function main() {
+async function main(): Promise<void> {
     switch (process.platform) {
         case 'darwin': break;
         case 'linux': break;
