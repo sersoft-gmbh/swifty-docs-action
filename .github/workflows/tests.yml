@@ -35,7 +35,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: latest-stable
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
@@ -84,7 +84,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: latest-stable
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
