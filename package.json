@@ -29,7 +29,7 @@
   "homepage": "https://github.com/sersoft-gmbh/swifty-docs-action#readme",
   "dependencies": {
     "@actions/core": "^2.0.0",
-    "@actions/exec": "^1.1.1"
+    "@actions/exec": "^2.0.0"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.3",
