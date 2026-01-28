@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/sersoft-gmbh/swifty-docs-action#readme",
   "dependencies": {
-    "@actions/core": "^2.0.2",
+    "@actions/core": "^2.0.3",
     "@actions/exec": "^2.0.0"
   },
   "devDependencies": {
